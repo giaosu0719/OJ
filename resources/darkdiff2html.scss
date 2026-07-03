@@ -1,0 +1,226 @@
+@use "vars-dark" as *;
+
+body[data-theme="dark"] {
+  
+  // ==========================================
+  // DIFF2HTML (d2h) DARK MODE OVERRIDES
+  // ==========================================
+
+  .d2h-file-header {
+    background-color: $color_primary10;
+    border-bottom-color: $color_primary25;
+  }
+
+  .d2h-lines-added {
+    border-color: $color_success50;
+    color: $color_success100;
+  }
+
+  .d2h-lines-deleted {
+    border-color: $color_danger50;
+    color: $color_danger100;
+  }
+
+  .d2h-file-wrapper,
+  .d2h-file-collapse {
+    border-color: $color_primary25;
+  }
+
+  .d2h-file-collapse.d2h-selected {
+    background-color: $color_info25;
+  }
+
+  .d2h-code-line-ctn {
+    color: $color_primary90;
+  }
+
+  .d2h-code-line del,
+  .d2h-code-side-line del {
+    background-color: $color_danger50;
+  }
+
+  .d2h-code-line ins,
+  .d2h-code-side-line ins {
+    background-color: $color_success50;
+  }
+
+  .d2h-code-linenumber,
+  .d2h-code-side-linenumber {
+    background-color: $color_primary10;
+    color: $color_primary50;
+    border-color: $color_primary25;
+  }
+
+  .d2h-code-side-emptyplaceholder,
+  .d2h-emptyplaceholder {
+    background-color: $color_primary5;
+    border-color: $color_primary25;
+  }
+
+  .d2h-del {
+    background-color: $color_danger25;
+    border-color: $color_danger50;
+  }
+
+  .d2h-ins {
+    background-color: $color_success25;
+    border-color: $color_success50;
+  }
+
+  .d2h-info {
+    background-color: $color_info25;
+    color: $color_primary50;
+    border-color: $color_info50;
+  }
+
+  .d2h-file-diff .d2h-del.d2h-change {
+    background-color: $color_warning25;
+  }
+
+  .d2h-file-diff .d2h-ins.d2h-change {
+    background-color: $color_success25; // Cập nhật màu xanh lá thay vì xám
+  }
+
+  .d2h-file-list-wrapper a {
+    color: $color_link75;
+    &:visited {
+      color: $color_link75;
+    }
+  }
+
+  .d2h-file-list > li {
+    border-bottom-color: $color_primary25;
+  }
+
+  .d2h-deleted {
+    color: $color_danger100;
+  }
+
+  .d2h-added {
+    color: $color_success100;
+  }
+
+  .d2h-changed {
+    color: $color_warning100;
+  }
+
+  .d2h-moved {
+    color: $color_link75;
+  }
+
+  .d2h-tag {
+    background-color: $color_primary10;
+  }
+
+  .d2h-deleted-tag {
+    border-color: $color_danger100;
+  }
+
+  .d2h-added-tag {
+    border-color: $color_success100;
+  }
+
+  .d2h-changed-tag {
+    border-color: $color_warning100;
+  }
+
+  .d2h-moved-tag {
+    border-color: $color_link75;
+  }
+
+  // ==========================================
+  // HIGHLIGHT.JS (hljs) GITHUB DARK OVERRIDES
+  // ==========================================
+  
+  .hljs {
+    color: $color_primary90;
+    background: $color_blog_code_bg;
+  }
+
+  .hljs-doctag,
+  .hljs-keyword,
+  .hljs-meta .hljs-keyword,
+  .hljs-template-tag,
+  .hljs-template-variable,
+  .hljs-type,
+  .hljs-variable.language_ {
+    color: #ff7b72; // GitHub Dark Red
+  }
+
+  .hljs-title,
+  .hljs-title.class_,
+  .hljs-title.class_.inherited__,
+  .hljs-title.function_ {
+    color: #d2a8ff; // GitHub Dark Purple
+  }
+
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-literal,
+  .hljs-meta,
+  .hljs-number,
+  .hljs-operator,
+  .hljs-selector-attr,
+  .hljs-selector-class,
+  .hljs-selector-id,
+  .hljs-variable {
+    color: #79c0ff; // GitHub Dark Blue
+  }
+
+  .hljs-meta .hljs-string,
+  .hljs-regexp,
+  .hljs-string {
+    color: #a5d6ff; // GitHub Dark Light Blue
+  }
+
+  .hljs-built_in,
+  .hljs-symbol {
+    color: #ffa657; // GitHub Dark Orange
+  }
+
+  .hljs-code,
+  .hljs-comment,
+  .hljs-formula {
+    color: $color_primary66; 
+  }
+
+  .hljs-name,
+  .hljs-quote,
+  .hljs-selector-pseudo,
+  .hljs-selector-tag {
+    color: #7ee787; // GitHub Dark Green
+  }
+
+  .hljs-subst {
+    color: $color_primary90;
+  }
+
+  .hljs-section {
+    color: #1f6feb; // GitHub Dark Bold Blue
+    font-weight: 700;
+  }
+
+  .hljs-bullet {
+    color: #f2cc60; // GitHub Dark Yellow
+  }
+
+  .hljs-emphasis {
+    color: $color_primary90;
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    color: $color_primary90;
+    font-weight: 700;
+  }
+
+  .hljs-addition {
+    color: $color_success100;
+    background-color: $color_success25;
+  }
+
+  .hljs-deletion {
+    color: $color_danger100;
+    background-color: $color_danger25;
+  }
+}
