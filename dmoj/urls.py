@@ -20,8 +20,9 @@ from judge.views.problem_data import ProblemDataView, ProblemSubmissionDiff, \
     problem_data_file, problem_init_view
 from judge.views.register import ActivationView, RegistrationView
 from judge.views.select2 import AssigneeSelect2View, CommentSelect2View, ContestSelect2View, \
-    ContestUserSearchSelect2View, OrganizationSelect2View, OrganizationUserSearchSelect2View, \
-    OrganizationUserSelect2View, ProblemSelect2View, TagGroupSelect2View, TagSelect2View, TicketUserSelect2View, \
+    ContestUserSearchSelect2View, OrganizationProblemSelect2View, OrganizationSelect2View, \
+    OrganizationUserSearchSelect2View, OrganizationUserSelect2View, ProblemSelect2View, \
+    PublicProblemSelect2View, TagGroupSelect2View, TagSelect2View, TicketUserSelect2View, \
     UserSearchSelect2View, UserSelect2View
 from judge.views.widgets import martor_image_uploader
 from martor.views import markdown_search_user
@@ -246,6 +247,7 @@ urlpatterns = [
         path('/announce', contests.ContestAnnounce.as_view(), name='contest_announce'),
         path('/clone', contests.ContestClone.as_view(), name='contest_clone'),
         path('/ranking/', contests.ContestRanking.as_view(), name='contest_ranking'),
+        path('/replay/<int:version>/', contests.ContestReplayData.as_view(), name='contest_replay_data'),
         path('/public_ranking/', contests.ContestPublicRanking.as_view(), name='contest_public_ranking'),
         path('/official_ranking/', contests.ContestOfficialRanking.as_view(), name='contest_official_ranking'),
         path('/register', contests.ContestRegister.as_view(), name='contest_register'),
@@ -431,6 +433,8 @@ urlpatterns = [
              name='organization_profile_select2'),
         path('organization/', OrganizationSelect2View.as_view(), name='organization_select2'),
         path('problem/', ProblemSelect2View.as_view(), name='problem_select2'),
+        path('problem/public/', PublicProblemSelect2View.as_view(), name='public_problem_select2'),
+        path('problem/org/<int:org_pk>/', OrganizationProblemSelect2View.as_view(), name='org_problem_select2'),
         path('contest/', ContestSelect2View.as_view(), name='contest_select2'),
         path('comment/', CommentSelect2View.as_view(), name='comment_select2'),
         path('tag/', TagSelect2View.as_view(), name='tag_select2'),
