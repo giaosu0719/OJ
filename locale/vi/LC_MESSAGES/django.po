@@ -1,4 +1,4 @@
-msgid ""
+ msgid ""
 msgstr ""
 "Project-Id-Version: dmoj\n"
 "Report-Msgid-Bugs-To: \n"
@@ -1553,7 +1553,7 @@ msgstr "Logo"
 msgid ""
 "This image will replace the default site logo for users inside the contest."
 msgstr ""
-"Link tới logo của kỳ thi. Ví dụ: https://oj.vnoi.info/martor/logo/hoadao.png"
+"Link tới logo của kỳ thi. Ví dụ: https://oj.tcpp.edu.vn/martor/hehehe.png"
 
 #: judge/models/contest.py:163
 msgid "the amount of live participants"
@@ -5488,8 +5488,8 @@ msgstr "dựa trên nền tảng %(dmoj)s"
 
 #: templates/base.html:433
 #, python-format
-msgid "follow us on %(github)s and %(facebook)s"
-msgstr "theo dõi VNOI trên %(github)s và %(facebook)s"
+msgid "TCOJ"
+msgstr "TCOJ"
 
 #: templates/blog/blog-list-tabs.html:4
 msgid "Newsfeed"

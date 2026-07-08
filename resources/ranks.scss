@@ -19,6 +19,24 @@
     color: #ff888a !important;
     font-weight: bold !important;
 }
+@keyframes magmaFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes smokeRise {
+    0% { text-shadow: 0 -2px 4px #ff5500, 1px -6px 8px rgba(150,150,150,0.6), -2px -12px 14px rgba(100,100,100,0.4); }
+    50% { text-shadow: 0 -3px 5px #ff2200, -2px -8px 10px rgba(120,120,120,0.5), 2px -16px 20px rgba(80,80,80,0.3); }
+    100% { text-shadow: 0 -2px 4px #ff5500, 1px -6px 8px rgba(150,150,150,0.6), -2px -12px 14px rgba(100,100,100,0.4); }
+}
+.staff {
+    background: linear-gradient(90deg, #ff0000, #ffaa00, #ff0000) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: bold !important;
+    animation: magmaFlow 2s linear infinite, smokeRise 0.6s infinite alternate ease-in-out !important;
+}
 
 .staff a::before {
     content: "🔥";
@@ -43,6 +61,145 @@
     text-decoration: line-through $color_primary100;
 }
 
+.rainbow a {
+    background: linear-gradient(
+        to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbow-move 1s linear infinite;
+}
+
+@keyframes rainbow-move {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+.rainbow a::before{content: "🌈"; -webkit-text-fill-color: black; color: black !important;}
+.rainbow a::after{content: "✨"; -webkit-text-fill-color: black; color: black !important;}
+
+.gay a {
+    background: linear-gradient(
+        180deg,
+        #F13770,
+        #FF5C41,
+        #FCA34D,
+        #43D195,
+        #3F8DF1,
+        #6D549F
+    );
+    background-size: 100% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+.gay a::before{content: "🏳️‍🌈"; -webkit-text-fill-color: black; color: black !important;}
+.gay a::after{content: "🏳️‍🌈"; -webkit-text-fill-color: black; color: black !important;}
+
+.champion a::before {content: "🏆"}
+@keyframes championGlow {
+    0%,100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.08);
+    }
+}
+@keyframes championShine {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
+tr:has(td.user-name):has(.champion) {
+    position: relative;
+    overflow: hidden;
+    animation: championGlow 4s ease-in-out infinite;
+    transition: .3s;
+}
+
+/* ---------- DARK ---------- */
+tr:has(td.user-name):has(.champion),
+table tbody tr:has(td.user-name):has(.champion):hover {
+    background:
+        radial-gradient(
+            ellipse 160% 220% at center,
+            rgba(255,255,180,.28) 0%,
+            rgba(255,225,80,.14) 38%,
+            rgba(255,200,0,.05) 70%,
+            transparent 100%
+        ),
+
+        linear-gradient(to bottom, rgba(255,225,120,.55), rgba(255,225,120,.18) 2px, transparent 8px),
+        linear-gradient(to top,    rgba(255,225,120,.55), rgba(255,225,120,.18) 2px, transparent 8px),
+        linear-gradient(to right,  rgba(255,225,120,.28), rgba(255,225,120,.10) 2px, transparent 8px),
+        linear-gradient(to left,   rgba(255,225,120,.28), rgba(255,225,120,.10) 2px, transparent 8px),
+
+        linear-gradient(#18140d,#20180e) !important;
+
+    box-shadow:
+        inset 0 0 36px rgba(255,220,80,.12),
+        inset 0 0 10px rgba(255,255,255,.05),
+        0 0 12px rgba(255,220,80,.08) !important;
+}
+/* ---------- LIGHT ---------- */
+body[data-theme="light"] tr:has(td.user-name):has(.champion),
+body[data-theme="light"] table tbody tr:has(td.user-name):has(.champion):hover {
+    background:
+        radial-gradient(
+            ellipse 170% 240% at center,
+            rgba(255,235,140,.38) 0%,
+            rgba(255,220,90,.18) 38%,
+            rgba(255,200,0,.06) 70%,
+            transparent 100%
+        ),
+
+        linear-gradient(to bottom,  rgba(255,190,30,.55), rgba(255,190,30,.16) 2px, transparent 8px),
+        linear-gradient(to top,     rgba(255,190,30,.55), rgba(255,190,30,.16) 2px, transparent 8px),
+        linear-gradient(to right,   rgba(255,190,30,.30), rgba(255,190,30,.08) 2px, transparent 8px),
+        linear-gradient(to left,    rgba(255,190,30,.30), rgba(255,190,30,.08) 2px, transparent 8px),
+
+        linear-gradient(#fffefb,#fffaf0) !important;
+
+    box-shadow:
+        inset 0 0 26px rgba(255,210,40,.10),
+        inset 0 0 8px rgba(255,255,255,.28),
+        0 0 6px rgba(255,200,40,.05) !important;
+}
+/* ---------- SHIMMER ---------- */
+tr:has(td.user-name):has(.champion)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background: repeating-linear-gradient(
+        35deg,
+        transparent 45%,
+        rgba(255, 255, 255, 0.03) 50%,
+        transparent 55%
+    ) ;
+
+    background-size: 250% 100%;
+    animation: championShine 30s linear infinite;
+}
+@keyframes championShine{
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
 @mixin rate-svg-color($color) {
     circle {
         stroke: $color;

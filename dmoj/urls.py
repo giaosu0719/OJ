@@ -32,7 +32,6 @@ admin.autodiscover()
 SEND_ACTIVATION_EMAIL = getattr(settings, 'SEND_ACTIVATION_EMAIL', True)
 REGISTRATION_COMPLETE_TEMPLATE = 'registration/registration_complete.html' if SEND_ACTIVATION_EMAIL \
                                  else 'registration/activation_complete.html'
-
 register_patterns = [
     path('activate/complete/',
          TitledTemplateView.as_view(template_name='registration/activation_complete.html',

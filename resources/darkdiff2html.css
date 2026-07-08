@@ -1,0 +1,175 @@
+body[data-theme=dark] .d2h-file-header {
+  background-color: #181818;
+  border-bottom-color: #3b3b3b;
+}
+body[data-theme=dark] .d2h-lines-added {
+  border-color: #172;
+  color: #6f8;
+}
+body[data-theme=dark] .d2h-lines-deleted {
+  border-color: #822;
+  color: #f99;
+}
+body[data-theme=dark] .d2h-file-wrapper,
+body[data-theme=dark] .d2h-file-collapse {
+  border-color: #3b3b3b;
+}
+body[data-theme=dark] .d2h-file-collapse.d2h-selected {
+  background-color: #023;
+}
+body[data-theme=dark] .d2h-code-line-ctn {
+  color: #eee;
+}
+body[data-theme=dark] .d2h-code-line del,
+body[data-theme=dark] .d2h-code-side-line del {
+  background-color: #822;
+}
+body[data-theme=dark] .d2h-code-line ins,
+body[data-theme=dark] .d2h-code-side-line ins {
+  background-color: #172;
+}
+body[data-theme=dark] .d2h-code-linenumber,
+body[data-theme=dark] .d2h-code-side-linenumber {
+  background-color: #181818;
+  color: #808080;
+  border-color: #3b3b3b;
+}
+body[data-theme=dark] .d2h-code-side-emptyplaceholder,
+body[data-theme=dark] .d2h-emptyplaceholder {
+  background-color: #111;
+  border-color: #3b3b3b;
+}
+body[data-theme=dark] .d2h-del {
+  background-color: #311;
+  border-color: #822;
+}
+body[data-theme=dark] .d2h-ins {
+  background-color: #031;
+  border-color: #172;
+}
+body[data-theme=dark] .d2h-info {
+  background-color: #023;
+  color: #808080;
+  border-color: #068;
+}
+body[data-theme=dark] .d2h-file-diff .d2h-del.d2h-change {
+  background-color: #320;
+}
+body[data-theme=dark] .d2h-file-diff .d2h-ins.d2h-change {
+  background-color: #031;
+}
+body[data-theme=dark] .d2h-file-list-wrapper a {
+  color: #6bf;
+}
+body[data-theme=dark] .d2h-file-list-wrapper a:visited {
+  color: #6bf;
+}
+body[data-theme=dark] .d2h-file-list > li {
+  border-bottom-color: #3b3b3b;
+}
+body[data-theme=dark] .d2h-deleted {
+  color: #f99;
+}
+body[data-theme=dark] .d2h-added {
+  color: #6f8;
+}
+body[data-theme=dark] .d2h-changed {
+  color: #fd6;
+}
+body[data-theme=dark] .d2h-moved {
+  color: #6bf;
+}
+body[data-theme=dark] .d2h-tag {
+  background-color: #181818;
+}
+body[data-theme=dark] .d2h-deleted-tag {
+  border-color: #f99;
+}
+body[data-theme=dark] .d2h-added-tag {
+  border-color: #6f8;
+}
+body[data-theme=dark] .d2h-changed-tag {
+  border-color: #fd6;
+}
+body[data-theme=dark] .d2h-moved-tag {
+  border-color: #6bf;
+}
+body[data-theme=dark] .hljs {
+  color: #eee;
+  background: #2d2d2d;
+}
+body[data-theme=dark] .hljs-doctag,
+body[data-theme=dark] .hljs-keyword,
+body[data-theme=dark] .hljs-meta .hljs-keyword,
+body[data-theme=dark] .hljs-template-tag,
+body[data-theme=dark] .hljs-template-variable,
+body[data-theme=dark] .hljs-type,
+body[data-theme=dark] .hljs-variable.language_ {
+  color: #ff7b72;
+}
+body[data-theme=dark] .hljs-title,
+body[data-theme=dark] .hljs-title.class_,
+body[data-theme=dark] .hljs-title.class_.inherited__,
+body[data-theme=dark] .hljs-title.function_ {
+  color: #d2a8ff;
+}
+body[data-theme=dark] .hljs-attr,
+body[data-theme=dark] .hljs-attribute,
+body[data-theme=dark] .hljs-literal,
+body[data-theme=dark] .hljs-meta,
+body[data-theme=dark] .hljs-number,
+body[data-theme=dark] .hljs-operator,
+body[data-theme=dark] .hljs-selector-attr,
+body[data-theme=dark] .hljs-selector-class,
+body[data-theme=dark] .hljs-selector-id,
+body[data-theme=dark] .hljs-variable {
+  color: #79c0ff;
+}
+body[data-theme=dark] .hljs-meta .hljs-string,
+body[data-theme=dark] .hljs-regexp,
+body[data-theme=dark] .hljs-string {
+  color: #a5d6ff;
+}
+body[data-theme=dark] .hljs-built_in,
+body[data-theme=dark] .hljs-symbol {
+  color: #ffa657;
+}
+body[data-theme=dark] .hljs-code,
+body[data-theme=dark] .hljs-comment,
+body[data-theme=dark] .hljs-formula {
+  color: #aaa;
+}
+body[data-theme=dark] .hljs-name,
+body[data-theme=dark] .hljs-quote,
+body[data-theme=dark] .hljs-selector-pseudo,
+body[data-theme=dark] .hljs-selector-tag {
+  color: #7ee787;
+}
+body[data-theme=dark] .hljs-subst {
+  color: #eee;
+}
+body[data-theme=dark] .hljs-section {
+  color: #1f6feb;
+  font-weight: 700;
+}
+body[data-theme=dark] .hljs-bullet {
+  color: #f2cc60;
+}
+body[data-theme=dark] .hljs-emphasis {
+  color: #eee;
+  font-style: italic;
+}
+body[data-theme=dark] .hljs-strong {
+  color: #eee;
+  font-weight: 700;
+}
+body[data-theme=dark] .hljs-addition {
+  color: #6f8;
+  background-color: #031;
+}
+body[data-theme=dark] .hljs-deletion {
+  color: #f99;
+  background-color: #311;
+}
+
+/*# sourceMappingURL=darkdiff2html.css.map */
