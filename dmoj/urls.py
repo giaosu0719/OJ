@@ -388,8 +388,8 @@ urlpatterns = [
     ])),
 
     path('feed/', include([
-        path('problems/rss/', ProblemFeed(), name='problem_rss'),
-        path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
+        # path('problems/rss/', ProblemFeed(), name='problem_rss'),
+        # path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
         path('comment/rss/', CommentFeed(), name='comment_rss'),
         path('comment/atom/', AtomCommentFeed(), name='comment_atom'),
         path('blog/rss/', BlogFeed(), name='blog_rss'),

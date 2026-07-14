@@ -148,7 +148,7 @@ class BaseOrganizationListView(PublicOrganizationMixin, ListView):
         return super(BaseOrganizationListView, self).get_object(queryset)
 
 
-class OrganizationList(DiggPaginatorMixin, TitleMixin, ListView):
+class OrganizationList(DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
     model = Organization
     context_object_name = 'organizations'
     template_name = 'organization/list.html'
