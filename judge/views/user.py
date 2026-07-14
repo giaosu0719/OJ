@@ -88,7 +88,7 @@ class CustomUserMixin(object):
         return super(CustomUserMixin, self).dispatch(request, *args, **kwargs)
 
 
-class UserPage(TitleMixin, UserMixin, DetailView):
+class UserPage(TitleMixin, UserMixin, LoginRequiredMixin, DetailView):
     template_name = 'user/user-base.html'
 
     def get_object(self, queryset=None):
@@ -187,7 +187,7 @@ class CustomPasswordChangeView(PasswordChangeView):
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
 
-class UserAboutPage(UserPage):
+class UserAboutPage(UserPage, LoginRequiredMixin):
     template_name = 'user/user-about.html'
 
     def get_context_data(self, **kwargs):
@@ -579,7 +579,7 @@ def generate_scratch_codes(request):
     return JsonResponse({'data': {'codes': profile.generate_scratch_codes()}})
 
 
-class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, ListView):
+class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Leaderboard')
     context_object_name = 'users'
