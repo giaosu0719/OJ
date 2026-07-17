@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('judge', '0232_alter_badge_full_size_alter_badge_mini.py'),
+        ('judge', '0232_alter_badge_full_size_alter_badge_mini'),
     ]
 
     operations = [
