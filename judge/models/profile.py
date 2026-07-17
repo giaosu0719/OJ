@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, URLValidator
 from django.db import models
-from django.db.models import F, Max, Sum
+from django.db.models import Max, Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -41,14 +41,16 @@ class EncryptedNullCharField(EncryptedCharField):
             return None
         return super(EncryptedNullCharField, self).get_prep_value(value)
 
+
 url_validator = URLValidator()
+
 
 def validate_relative_or_absolute(value):
     if not value:
         return  # allow blank values
 
     # Accept relative URLs
-    if value.startswith("/"):
+    if value.startswith('/'):
         return
 
     # Otherwise it must be a valid absolute URL
@@ -56,8 +58,9 @@ def validate_relative_or_absolute(value):
         url_validator(value)
     except ValidationError:
         raise ValidationError(
-            "Enter a valid absolute URL or a relative path starting with '/'."
+            "Enter a valid absolute URL or a relative path starting with '/'.",
         )
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=128, verbose_name=_('organization title'))
@@ -250,8 +253,10 @@ class OrganizationMonthlyUsage(models.Model):
 
 class Badge(models.Model):
     name = models.CharField(max_length=128, verbose_name=_('badge name'))
-    mini = models.CharField(max_length=1000, verbose_name=_('mini badge URL'), blank=True, validators=[validate_relative_or_absolute])
-    full_size = models.CharField(max_length=1000, verbose_name=_('full size badge URL'), blank=True, validators=[validate_relative_or_absolute])
+    mini = models.CharField(max_length=1000, verbose_name=_('mini badge URL'), blank=True,
+                            validators=[validate_relative_or_absolute])
+    full_size = models.CharField(max_length=1000, verbose_name=_('full size badge URL'), blank=True,
+                                 validators=[validate_relative_or_absolute])
 
     def __str__(self):
         return self.name
@@ -287,6 +292,8 @@ class Profile(models.Model):
                                       default=False)
     ban_reason = models.TextField(null=True, blank=True,
                                   help_text=_('Show to banned user in login page.'))
+    ban_expires_at = models.DateTimeField(null=True, blank=True,
+                                          help_text=_('If set, the ban will be automatically lifted after this time.'))
     allow_tagging = models.BooleanField(verbose_name=_('Allow tagging'),
                                         help_text=_('User will be allowed to tag problems.'),
                                         default=True)
@@ -419,8 +426,7 @@ class Profile(models.Model):
         bonus_function = settings.DMOJ_PP_BONUS_FUNCTION
         points = sum(data)
         problems = (
-            public_problems.filter(submission__user=self, submission__result='AC',
-                                   submission__case_points__gte=F('submission__case_total'))
+            public_problems.filter(submission__user=self, submission__result='AC')
             .values('id').distinct().count()
         )
         pp = sum(x * y for x, y in zip(table, data)) + bonus_function(problems)
@@ -523,11 +529,24 @@ class Profile(models.Model):
 
     ban_user.alters_data = True
 
+    def temporarily_ban_user(self, reason, expires_at):
+        self.ban_reason = reason
+        self.ban_expires_at = expires_at
+        self.display_rank = 'banned'
+        self.is_unlisted = True
+        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted'])
+
+        self.user.is_active = False
+        self.user.save(update_fields=['is_active'])
+
+    temporarily_ban_user.alters_data = True
+
     def unban_user(self):
         self.ban_reason = None
+        self.ban_expires_at = None
         self.display_rank = Profile._meta.get_field('display_rank').get_default()
         self.is_unlisted = False
-        self.save(update_fields=['ban_reason', 'display_rank', 'is_unlisted'])
+        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted',])
 
         self.user.is_active = True
         self.user.save(update_fields=['is_active'])

@@ -36,6 +36,7 @@ from judge.forms import CustomAuthenticationForm, ProfileForm, UserBanForm, User
     newsletter_id
 from judge.models import BlogPost, Organization, Profile, Submission
 from judge.models import Comment
+from judge.models.notification import make_notification
 from judge.performance_points import get_pp_breakdown
 from judge.ratings import rating_class, rating_progress
 from judge.tasks import import_users
@@ -237,7 +238,30 @@ class UserBan(UserMixin, TitleMixin, SingleObjectFormView):
     def form_valid(self, form):
         user = self.object
         with revisions.create_revision(atomic=True):
-            user.ban_user(form.cleaned_data['ban_reason'])
+            expires_at = form.cleaned_data['ban_expires_at']
+            reason = form.cleaned_data['ban_reason']
+
+            if expires_at is not None:
+                if expires_at <= timezone.now():
+                    form.add_error('ban_expires_at', _('Ban expiration must be in the future.'))
+                    return self.form_invalid(form)
+                else:
+                    user.temporarily_ban_user(reason=reason, expires_at=expires_at)
+                    make_notification(
+                        [user.id],
+                        _('Temporarily banned!'),
+                        _('You have been temporarily banned from the site. \
+                        Reason: {0}. Ban expires at {1}.')
+                        .format(reason, date_format(expires_at, use_l10n=True)),
+                        popup=True,
+                    )
+            else:
+                user.ban_user(reason=reason)
+                make_notification([user.id], _('Banned!'),
+                                  _('You have been banned from the site. \
+                                    Reason: {0}').format(reason),
+                                  popup=True)
+
             revisions.set_user(self.request.user)
             revisions.set_comment(_('Banned by %s') % self.request.user)
 
