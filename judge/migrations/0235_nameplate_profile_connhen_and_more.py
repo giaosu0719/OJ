@@ -53,7 +53,7 @@ def migrate_nameplates(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('judge', '0234_alter_contest_authors_alter_contest_curators_and_more'),
+        ('judge', '0233_profile_ban_expires_at'),
     ]
 
     operations = [
