@@ -11,6 +11,7 @@
     {% endif %}
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
     <!-- Favicons-->
+    <!-- 
     <link rel="apple-touch-icon" sizes="57x57" href="{{ static('icons/apple-touch-icon-57x57.png') }}">
     <link rel="apple-touch-icon" sizes="60x60" href="{{ static('icons/apple-touch-icon-60x60.png') }}">
     <link rel="apple-touch-icon" sizes="72x72" href="{{ static('icons/apple-touch-icon-72x72.png') }}">
@@ -20,14 +21,20 @@
     <link rel="apple-touch-icon" sizes="144x144" href="{{ static('icons/apple-touch-icon-144x144.png') }}">
     <link rel="apple-touch-icon" sizes="152x152" href="{{ static('icons/apple-touch-icon-152x152.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ static('icons/apple-touch-icon-180x180.png') }}">
-    <link rel="icon" type="image/png" href="{{ static('icons/favicon-32x32.png') }}" sizes="32x32">
     <link rel="icon" type="image/png" href="{{ static('icons/android-chrome-192x192.png') }}" sizes="192x192">
+    <link rel="icon" type="image/png" href="{{ static('icons/favicon-32x32.png') }}" sizes="32x32">
     <link rel="icon" type="image/png" href="{{ static('icons/favicon-96x96.png') }}" sizes="96x96">
-    <link rel="icon" type="image/png" href="{{ static('icons/favicon-16x16.png') }}" sizes="16x16">
+    <link rel="icon" type="image/png" href="{{ static('icons/favicon-16x16.png') }}" sizes="16x16"> 
+    -->
+
+    {% with favicon_url=misc_config.site_favicon|default(static('icons/favicon.ico'), true) %}
+        <link rel="icon" type="image/png" href="{{ favicon_url }}">
+    {% endwith %}
+
     <meta name="msapplication-TileColor" content="#231F20">
     <meta name="msapplication-TileImage" content="{{ static('icons/mstile-144x144.png') }}">
     {# Chrome 39 for Android colour #}
-    <meta name="theme-color" content="#231F20">
+    <meta name="theme-color" content="#070F2B">
     {% if og_image %}
         <meta property="og:image" content="{{ request.build_absolute_uri(og_image) }}">
     {% else %}
@@ -66,6 +73,31 @@
         </style>
     {% endif %}
     {% block media %}{% endblock %}
+
+    <!-- hihiihihihihhihi -->
+     {% if TOMCHIENXU_CUSTOM_THEME == "WINTER" %}
+        <style>
+            #page-container {
+                background-image: url("{{ static('tomchienxu-themes/winter/winter-tomchienxu.png') }}");
+                background-size: 100%;
+            }
+        </style>
+        <script src="{{ static('tomchienxu-themes/winter/snowstorm.js') }}"></script>
+
+        <script>
+            snowStorm.snowColor = "#99ccff";
+            snowStorm.flakesMaxActive = 70;
+            snowStorm.useTwinkleEffect = true;
+            snowStorm.followMouse = false;
+            snowStorm.snowStick = false;
+            snowStorm.useMeltEffect = true;
+            snowStorm.vMaxX = 3;
+            snowStorm.vMaxY = 3;
+            snowStorm.className = "unselectable";
+        </script>
+    {% endif %}
+
+
     {% if not INLINE_JQUERY %}
         <script src="{{ JQUERY_JS }}"></script>
     {% endif %}
@@ -236,11 +268,11 @@
             {% if request.organization is not defined %}
                 <li class="home-nav-element"><a href="{{ url('home') }}">{% include "site-logo-fragment.html" %}</a></li>
                 <li class="home-nav-element"><span class="nav-divider"></span></li>
-                <li class="home-menu-item"><a href="{{ url('home') }}" class="nav-home">{{ _('Home') }}</a></li>
+                <li class="home-menu-item"><a href="{{ url('home') }}" class="nav-home"><b>{{ _('Home') }}</b></a></li>
                 {% for node in mptt_tree(nav_bar) recursive %}
                     <li>
                         <a href="{{ node.path }}" class="nav-{{ node.key }}{% if node.key in nav_tab %} active{% endif %}">
-                            {{ _(node.label) }}
+                            <b>{{ _(node.label) }}</b>
                             {% if not node.is_leaf_node() %}
                                 <div class="nav-expand">&gt;</div>
                             {% endif %}
@@ -254,7 +286,7 @@
                 {% macro make_navbar_item(key, url, text) %}
                     <li>
                         <a href="{{ url }}" class="nav-{{ key }}"><span>
-                            {{ text }}
+                            <b>{{ text }}</b>
                         </a>
                     </li>
                 {% endmacro %}
@@ -432,11 +464,10 @@
 
     {% block bodyend %}{% endblock %}
 
-    <footer>
-        <span id="footer-content">
-            <br>
-            {{_('proudly powered by %(dmoj)s', dmoj=safe('<a style="color: #808080" href="https://dmoj.ca"><b>DMOJ</b></a>'))}} |
-            {{_('follow us on %(github)s and %(facebook)s', github=safe('<a style="color: #808080" href="https://github.com/VNOI-Admin/OJ"><b>Github</b></a>'), facebook=safe('<a style="color: #808080" href="https://www.facebook.com/vnoi.wiki"><b>Facebook</b></a>'))}}
+    <footer style="padding: 5px 0; align-content: center;">
+        <span id="footer-content" class="p-3">
+            {{_('Proudly powered by %(dmoj)s, %(vnoj)s', dmoj=safe('<a style="color: #808080" href="https://dmoj.ca"><b>DMOJ</b></a>'),vnoj=safe('<a style="color: #808080" href="https://oj.vnoi.info"><b>VNOJ</b></a>'))}} |
+            {{_('%(tcoj)s', tcoj=safe('<a style="color: #808080" href="https://github.com/giaosu0719/OJ"><b>TCOJ</b></a>'))}}
             {% if misc_config.footer %}
                 {{ misc_config.footer|safe }} |
             {% endif %}

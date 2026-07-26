@@ -32,7 +32,6 @@ admin.autodiscover()
 SEND_ACTIVATION_EMAIL = getattr(settings, 'SEND_ACTIVATION_EMAIL', True)
 REGISTRATION_COMPLETE_TEMPLATE = 'registration/registration_complete.html' if SEND_ACTIVATION_EMAIL \
                                  else 'registration/activation_complete.html'
-
 register_patterns = [
     path('activate/complete/',
          TitledTemplateView.as_view(template_name='registration/activation_complete.html',
@@ -389,8 +388,8 @@ urlpatterns = [
     ])),
 
     path('feed/', include([
-        path('problems/rss/', ProblemFeed(), name='problem_rss'),
-        path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
+        # path('problems/rss/', ProblemFeed(), name='problem_rss'),
+        # path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
         path('comment/rss/', CommentFeed(), name='comment_rss'),
         path('comment/atom/', AtomCommentFeed(), name='comment_atom'),
         path('blog/rss/', BlogFeed(), name='blog_rss'),

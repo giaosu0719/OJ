@@ -93,7 +93,7 @@ class ContestListMixin(object):
         return context
 
 
-class ContestList(InfinitePaginationMixin, TitleMixin, ContestListMixin, ListView):
+class ContestList(LoginRequiredMixin, InfinitePaginationMixin, TitleMixin, ContestListMixin, ListView):
     model = Contest
     paginate_by = 20
     template_name = 'contest/list.html'
@@ -295,7 +295,7 @@ class ContestMixin(object):
         return action(request)
 
 
-class ContestDetail(ContestMixin, TitleMixin, CommentedDetailView):
+class ContestDetail(ContestMixin, LoginRequiredMixin, TitleMixin, CommentedDetailView):
     template_name = 'contest/contest.html'
 
     def is_comment_locked(self):
@@ -365,7 +365,7 @@ class ContestDetail(ContestMixin, TitleMixin, CommentedDetailView):
         return context
 
 
-class ContestAllProblems(ContestMixin, TitleMixin, DetailView):
+class ContestAllProblems(ContestMixin, LoginRequiredMixin, TitleMixin, DetailView):
     template_name = 'contest/contest-all-problems.html'
 
     def get_title(self):
@@ -734,7 +734,7 @@ class ContestICal(TitleMixin, ContestListMixin, BaseListView):
         return HttpResponse(self.generate_ical(), content_type='text/calendar')
 
 
-class ContestStats(TitleMixin, ContestMixin, DetailView):
+class ContestStats(TitleMixin, ContestMixin, LoginRequiredMixin, DetailView):
     template_name = 'contest/stats.html'
 
     def get_title(self):
@@ -913,7 +913,7 @@ def _add_ranks_to_participation_json(participations):
         last_key = key
 
 
-class ContestRankingBase(ContestMixin, TitleMixin, DetailView):
+class ContestRankingBase(ContestMixin, LoginRequiredMixin, TitleMixin, DetailView):
     template_name = 'contest/ranking.html'
     tab = None
 

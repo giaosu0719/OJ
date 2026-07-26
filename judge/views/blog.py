@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, FilteredRelation, Max, Q
@@ -59,8 +60,8 @@ def vote_blog(request, delta):
     except BlogPost.DoesNotExist:
         return HttpResponseNotFound(_('Blog post not found.'), content_type='text/plain')
 
-    if blog.authors.filter(id=request.profile.id).exists():
-        return HttpResponseBadRequest(_('You cannot vote your own blog'), content_type='text/plain')
+    # if blog.authors.filter(id=request.profile.id).exists():
+    #     return HttpResponseBadRequest(_('You cannot vote your own blog'), content_type='text/plain')
 
     vote = BlogVote()
     vote.blog_id = blog_id

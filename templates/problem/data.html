@@ -443,7 +443,8 @@
 
             function fill_testcases() {
                 console.log("Filling testcase...");
-                var inFiles = [], outFiles = [];
+                // var inFiles = [], outFiles = [];
+                var batches = new Map();
 
                 var format = ["Themis", "CMS", "Polygon", "DMOJ"];
 
@@ -455,7 +456,7 @@
                 ];
 
                 var out_re = [
-                    new RegExp(/^(.+\.out|.+\.ok|.+\.ans|out|ok|ans)$/),
+                    new RegExp(/^(.+\.out|.+\.ok|.+\.ans|.+\.sol|out|ok|ans|sol)$/),
                     new RegExp(/^output.(.+\d+)$/),
                     new RegExp(/^(.+\d+\.a)$/),
                     new RegExp(/^(?=.*?\.out|out).*?(?:(?:^|\W)(?<batch>\d+)[^\d\s]+)?(?<case>\d+)[^\d\s]*$/),
@@ -464,8 +465,15 @@
                 var test_type = -1;
 
                 for (var i = 0; i < window.valid_files.length; i++) {
-                    var lastSlashIdx = window.valid_files[i].lastIndexOf('/');
-                    var tested_filename = window.valid_files[i].slice(lastSlashIdx + 1).toLowerCase();
+                    var path = window.valid_files[i];
+                    var lastSlashIdx = path.lastIndexOf('\\');
+                    var tested_filename = path.slice(lastSlashIdx + 1).toLowerCase();
+                    var filename = path.slice(lastSlashIdx + 1).toLowerCase();
+
+                    var folder = "";
+                    if (lastSlashIdx != -1) {
+                        folder = path.substring(0, lastSlashIdx);
+                    }
 
                     for (var type = 0; type < 3; type++) {
                         if (in_re[type].test(tested_filename)) {
@@ -473,10 +481,12 @@
                                 alert("{{_('Files are not in the same format!')}}");
                                 return false;
                             }
-
                             test_type = type;
-                            inFiles.push(window.valid_files[i]);
-                            console.log(`Found input file: ${window.valid_files[i]}`);
+                            if (!batches.has(folder))
+                                batches.set(folder, {in: [], out: []});
+                            batches.get(folder).in.push(path);
+                            
+                            console.log(`Found input file: ${window.valid_files[i]} (in batch ${folder} - ${lastSlashIdx})`);
                             console.log(`type: ${format[type]}`);
                             break;
                         }
@@ -486,43 +496,81 @@
                                 alert("{{_('Files are not in the same format!')}}");
                                 return false;
                             }
-
                             test_type = type;
-                            outFiles.push(window.valid_files[i]);
-                            console.log(`Found output file: ${window.valid_files[i]}`);
+                            if (!batches.has(folder))
+                                batches.set(folder, {in: [], out: []});
+                            batches.get(folder).out.push(path);
+
+                            console.log(`Found output file: ${window.valid_files[i]} (in batch ${folder} - ${lastSlashIdx})`);
                             console.log(`type: ${format[type]}`);
                             break;
                         }
                     }
                 }
-                if (inFiles.length == 0) {
+                
+                var totalTests = 0;
+                var rows = 0;
+                var lengthNotMatch = "";
+                for (const [folder, b] of batches) {
+                    totalTests += b.in.length;
+                    if (folder != "")
+                        rows += b.in.length + 2;
+                    else
+                        rows += b.in.length;
+                    if(b.in.length != b.out.length){
+                        s = `{{_('The number of input files (${b.in.length}) do not match the number of output files (${b.out.length}) (Folder ${folder})!')}}`
+                        s = s + `Input: ${b.in}\n=====================\n`
+                        s = s + `Output: ${b.out}\n`
+                        alert(s);
+                        return false;
+                    }
+                }
+                if(lengthNotMatch != ""){
+                    alert(lengthNotMatch);
+                    return false;
+                }
+                
+                if (totalTests == 0) {
                     alert("{{_('No input/output files. Make sure your files are following themis/polygon/cms test format')}}");
                     return false;
                 }
-                if (inFiles.length != outFiles.length) {
-                    s = `{{_('The number of input files (${inFiles.length}) do not match the number of output files (${outFiles.length})!')}}`
-                    s = s + `Input: ${inFiles}\n=====================\n`
-                    s = s + `Output: ${outFiles}\n`
-                    alert(s);
-                    return false;
-                }
-                n_test = Math.min(inFiles.length, window.testcase_limit);
-                // add boxes
-                while ($total.val() < n_test) {
+                
+                while ($total.val() < rows) {
                     $('a#add-case-row').click();
                 }
-                // natsort
-                var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-                inFiles.sort(collator.compare);
-                outFiles.sort(collator.compare);
-                // fill cases
-                for (var i = 0; i < n_test; i++) {
-                    $("#id_cases-" + i + "-input_file").append(new Option(inFiles[i], inFiles[i], true, true)).change();
-                    $("#id_cases-" + i + "-output_file").append(new Option(outFiles[i], outFiles[i], true, true)).change();
-                    $("#id_cases-" + i + "-points").val("1").change();
+                
+                window.autoBatchRows = [];
+                var idx = 0;
+                for (const [folder, b] of batches) {
+                    var collator = new Intl.Collator(undefined, {
+                        numeric: true,
+                        sensitivity: 'base'
+                    });
+                    b.in.sort(collator.compare);
+                    b.out.sort(collator.compare);
+
+                    if (folder != "") {
+                        $("#id_cases-" + idx + "-type").val("S").change();
+                        $("#id_cases-" + idx + "-points").val("1").change();
+                        window.autoBatchRows.push("cases-" + idx + "-DELETE");
+                        idx++;
+                    }
+                    for (var j = 0; j < b.in.length; j++) {
+                        $("#id_cases-" + idx + "-input_file").append(new Option(b.in[j], b.in[j], true, true)).change();
+                        $("#id_cases-" + idx + "-output_file").append(new Option(b.out[j], b.out[j], true, true)).change();
+                        $("#id_cases-" + idx + "-points").val("1").change();
+                        idx++;
+                    }
+                    if (folder != "") {
+                        $("#id_cases-" + idx + "-type").val("E").change();
+                        $("#id_cases-" + idx + "-points").val("1").change();
+                        window.autoBatchRows.push("cases-" + idx + "-DELETE");
+                        idx++;
+                    }
                 }
+
                 $("#fill-test-case-noti").show();
-                if (inFiles.length > window.testcase_limit) {
+                if (totalTests > window.testcase_limit) {
                     s = `{{_('Too many testcases')}}: ${inFiles.length}`;
                     s += '\n';
                     s += `{{_('Number of testcases must not exceed ${window.testcase_limit}')}}`;
@@ -581,10 +629,19 @@
                 let fileInput = event.target.files[0];
 
                 // 100 MB limit (Cloudflare's request body size limit)
-                if (fileInput && fileInput.size > 100 * 1024 * 1024) {
+                // if (fileInput && fileInput.size > 100 * 1024 * 1024) {
+                //     alert({{ _('File too large!')|htmltojs }} + ' ' +
+                //         {{ _('Your file is')|htmltojs }} + ' ' + (fileInput.size / (1024 * 1024)).toFixed(2) + ' MB. ' +
+                //         {{ _('Maximum allowed is 100 MB.')|htmltojs }});
+                //     event.target.value = "";
+                //     return;
+                // }
+
+                // bo may thich 2gb
+                if (fileInput && fileInput.size > 2000 * 1024 * 1024) {
                     alert({{ _('File too large!')|htmltojs }} + ' ' +
                         {{ _('Your file is')|htmltojs }} + ' ' + (fileInput.size / (1024 * 1024)).toFixed(2) + ' MB. ' +
-                        {{ _('Maximum allowed is 100 MB.')|htmltojs }});
+                        {{ _('Maximum allowed is 2000 MB.')|htmltojs }});
                     event.target.value = "";
                     return;
                 }
