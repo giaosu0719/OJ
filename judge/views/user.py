@@ -19,8 +19,9 @@ from django.db.models.expressions import Value
 from django.db.models.fields import DateField
 from django.db.models.functions import Cast, Coalesce
 from django.forms import Form
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -52,7 +53,7 @@ from judge.utils.views import DiggPaginatorMixin, QueryStringSortMixin, SingleOb
     add_file_response, generic_message
 from judge.views.blog import PostListBase
 from .contests import ContestRanking
-from django.template.loader import render_to_string
+
 
 __all__ = ['UserPage', 'UserAboutPage', 'UserProblemsPage', 'UserCommentPage', 'UserDownloadData', 'UserPrepareData',
            'users', 'edit_profile']
@@ -761,7 +762,8 @@ def generate_scratch_codes(request):
     return JsonResponse({'data': {'codes': profile.generate_scratch_codes()}})
 
 
-class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
+class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+               TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Leaderboard')
     context_object_name = 'users'
@@ -796,7 +798,8 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
 user_list_view = UserList.as_view()
 
 
-class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
+class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+                  TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Contributors')
     context_object_name = 'users'
@@ -883,6 +886,7 @@ class UserLogoutView(TitleMixin, TemplateView):
         auth_logout(request)
         return HttpResponseRedirect(request.get_full_path())
 
+
 class ImportUsersView(TitleMixin, TemplateView):
     template_name = 'user/import/index.html'
     title = _('Import Users')
@@ -901,16 +905,16 @@ def import_users_post_file(request):
     if not users:
         return JsonResponse({
             'done': False,
-            'msg': 'No valid row found. Make sure row containing username.'
+            'msg': 'No valid row found. Make sure row containing username.',
         })
 
     table_html = render_to_string('user/import/table_csv.html', {
-                    'data': users
-                })
+        'data': users,
+    })
     return JsonResponse({
         'done': True,
         'html': table_html,
-        'data': users
+        'data': users,
     })
 
 
@@ -922,7 +926,7 @@ def import_users_submit(request):
     users = json.loads(request.body)['users']
     log = import_users.import_users(users)
     return JsonResponse({
-        'msg': log     
+        'msg': log,
     })
 
 
@@ -934,6 +938,7 @@ def sample_import_users(request):
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
 
 class CustomPasswordResetView(PasswordResetView):
     title = gettext_lazy('Password reset')

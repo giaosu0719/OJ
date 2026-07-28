@@ -663,7 +663,7 @@ class Profile(models.Model):
         self.ban_expires_at = None
         self.safely_equip_nameplate(self.active_nameplate)
         self.is_unlisted = False
-        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted',])
+        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted'])
 
         self.user.is_active = True
         self.user.save(update_fields=['is_active'])
