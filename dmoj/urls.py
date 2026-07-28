@@ -9,7 +9,7 @@ from django.urls import include, path, re_path, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from judge.feed import AtomBlogFeed, AtomCommentFeed, AtomProblemFeed, BlogFeed, CommentFeed, ProblemFeed
+from judge.feed import AtomBlogFeed, AtomCommentFeed, BlogFeed, CommentFeed
 from judge.sitemap import sitemaps
 from judge.views import TitledTemplateView, api, blog, comment, contests, language, license, mailgun, notification, \
     organization, preview, problem, problem_download, problem_manage, ranked_submission, register, stats, status, \

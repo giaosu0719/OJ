@@ -1,18 +1,18 @@
 import csv
-from tempfile import mktemp
 
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from judge.models import Profile, Language, Organization
+from judge.models import Language, Organization, Profile
 
 
 fields = ['username', 'password', 'name', 'email', 'organizations']
 descriptions = ['my_username(edit old one if exist)',
-                 '123456 (must have)',
-                 'Nguyen Van A (can be empty)',
-                 'test@gmail.com (can be empty)',
-                 'org1&org2&org3&... (can be empty - org slug in URL)']
+                '123456 (must have)',
+                'Nguyen Van A (can be empty)',
+                'test@gmail.com (can be empty)',
+                'org1&org2&org3&... (can be empty - org slug in URL)']
+
 
 def csv_to_dict(csv_file):
     rows = csv.reader(csv_file.read().decode().split('\n'))
@@ -36,7 +36,7 @@ def csv_to_dict(csv_file):
             res.append(cur_dict)
     return res
 
-    
+
 # return result log
 def import_users(users):
     log = ''
@@ -47,7 +47,7 @@ def import_users(users):
         cur_log += username + ': '
 
         pwd = row['password']
-        
+
         user, created = User.objects.get_or_create(username=username, defaults={
             'is_active': True,
         })
@@ -86,7 +86,7 @@ def import_users(users):
 
         if row['email']:
             user.email = row['email']
-            
+
         user.save()
         profile.save()
         cur_log += 'Saved\n'

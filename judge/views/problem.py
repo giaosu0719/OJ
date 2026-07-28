@@ -543,7 +543,8 @@ class ProblemPdfView(ProblemMixin, SingleObjectMixin, View):
         return response
 
 
-class ProblemList(LoginRequiredMixin, QueryStringSortMixin, TitleMixin, SolvedProblemMixin, InfinitePaginationMixin, ListView):
+class ProblemList(LoginRequiredMixin, QueryStringSortMixin, TitleMixin,
+                  SolvedProblemMixin, InfinitePaginationMixin, ListView):
     model = Problem
     title = gettext_lazy('Problem list')
     context_object_name = 'problems'

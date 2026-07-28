@@ -19,13 +19,14 @@ from django.db.models.expressions import Value
 from django.db.models.fields import DateField
 from django.db.models.functions import Cast, Coalesce
 from django.forms import Form
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.formats import date_format
-from django.utils.functional import cached_property
+from django.utils.functional import cached_property, wraps
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.decorators.http import require_POST
@@ -52,10 +53,21 @@ from judge.utils.views import DiggPaginatorMixin, QueryStringSortMixin, SingleOb
     add_file_response, generic_message
 from judge.views.blog import PostListBase
 from .contests import ContestRanking
-from django.template.loader import render_to_string
+
 
 __all__ = ['UserPage', 'UserAboutPage', 'UserProblemsPage', 'UserCommentPage', 'UserDownloadData', 'UserPrepareData',
            'users', 'edit_profile']
+
+
+def enable_cosmetics_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not settings.TOMCHIENXU_ENABLE_COSMETICS:
+            return generic_message(request,
+                                   _('Cosmetics disabled'),
+                                   _('Cosmetics are disabled on this site.'), status=403)
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def remap_keys(iterable, mapping):
@@ -504,6 +516,7 @@ class UserDownloadData(LoginRequiredMixin, UserDataMixin, View):
         return response
 
 
+@enable_cosmetics_required
 @login_required
 def cosmetic_list(request):
     profile = (
@@ -525,6 +538,7 @@ def cosmetic_list(request):
     })
 
 
+@enable_cosmetics_required
 @login_required
 def nameplate_list(request):
     profile = (
@@ -543,6 +557,7 @@ def nameplate_list(request):
     })
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def nameplate_select(request, pk):
@@ -556,6 +571,7 @@ def nameplate_select(request, pk):
     return HttpResponseRedirect(reverse('user_nameplate'))
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def nameplate_clear(request):
@@ -564,6 +580,7 @@ def nameplate_clear(request):
     return HttpResponseRedirect(reverse('user_nameplate'))
 
 
+@enable_cosmetics_required
 @login_required
 def banner_list(request):
     profile = (
@@ -582,6 +599,7 @@ def banner_list(request):
     })
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def banner_select(request, pk):
@@ -595,6 +613,7 @@ def banner_select(request, pk):
     return HttpResponseRedirect(reverse('user_banner'))
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def banner_clear(request):
@@ -603,6 +622,7 @@ def banner_clear(request):
     return HttpResponseRedirect(reverse('user_banner'))
 
 
+@enable_cosmetics_required
 @login_required
 def avatar_frame_list(request):
     profile = (
@@ -620,6 +640,7 @@ def avatar_frame_list(request):
     })
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def avatar_frame_select(request, pk):
@@ -633,6 +654,7 @@ def avatar_frame_select(request, pk):
     return HttpResponseRedirect(reverse('user_avatar_frame'))
 
 
+@enable_cosmetics_required
 @login_required
 @require_POST
 def avatar_frame_clear(request):
@@ -740,7 +762,8 @@ def generate_scratch_codes(request):
     return JsonResponse({'data': {'codes': profile.generate_scratch_codes()}})
 
 
-class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
+class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+               TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Leaderboard')
     context_object_name = 'users'
@@ -775,7 +798,8 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
 user_list_view = UserList.as_view()
 
 
-class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListView):
+class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+                  TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Contributors')
     context_object_name = 'users'
@@ -862,6 +886,7 @@ class UserLogoutView(TitleMixin, TemplateView):
         auth_logout(request)
         return HttpResponseRedirect(request.get_full_path())
 
+
 class ImportUsersView(TitleMixin, TemplateView):
     template_name = 'user/import/index.html'
     title = _('Import Users')
@@ -880,16 +905,16 @@ def import_users_post_file(request):
     if not users:
         return JsonResponse({
             'done': False,
-            'msg': 'No valid row found. Make sure row containing username.'
+            'msg': 'No valid row found. Make sure row containing username.',
         })
 
     table_html = render_to_string('user/import/table_csv.html', {
-                    'data': users
-                })
+        'data': users,
+    })
     return JsonResponse({
         'done': True,
         'html': table_html,
-        'data': users
+        'data': users,
     })
 
 
@@ -901,7 +926,7 @@ def import_users_submit(request):
     users = json.loads(request.body)['users']
     log = import_users.import_users(users)
     return JsonResponse({
-        'msg': log     
+        'msg': log,
     })
 
 
@@ -913,6 +938,7 @@ def sample_import_users(request):
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
 
 class CustomPasswordResetView(PasswordResetView):
     title = gettext_lazy('Password reset')

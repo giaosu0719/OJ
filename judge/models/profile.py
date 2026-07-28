@@ -663,7 +663,7 @@ class Profile(models.Model):
         self.ban_expires_at = None
         self.safely_equip_nameplate(self.active_nameplate)
         self.is_unlisted = False
-        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted',])
+        self.save(update_fields=['ban_reason', 'ban_expires_at', 'display_rank', 'is_unlisted'])
 
         self.user.is_active = True
         self.user.save(update_fields=['is_active'])
@@ -768,7 +768,7 @@ class Profile(models.Model):
     def css_class(self):
         classes = [self.get_user_css_class(self.display_rank, self.rating)]
 
-        if self.active_banner:
+        if settings.TOMCHIENXU_ENABLE_COSMETICS and self.active_banner:
             classes.append(f'banner-{self.active_banner.class_name}')
 
         return ' '.join(classes)
@@ -779,8 +779,13 @@ class Profile(models.Model):
 
     @cached_property
     def avatar_frame_css_class_name(self):
-        return f'has-avatar-frame avatar-frame-{self.active_avatar_frame.class_name}' \
-            if self.active_avatar_frame else 'no-avatar-frame'
+        if not settings.TOMCHIENXU_ENABLE_COSMETICS:
+            return 'no-avatar-frame'
+
+        if not self.active_avatar_frame:
+            return 'no-avatar-frame'
+
+        return f'has-avatar-frame avatar-frame-{self.active_avatar_frame.class_name}'
 
     @cached_property
     def webauthn_id(self):
