@@ -441,7 +441,8 @@ class ProblemSubmitMixin:
         return HttpResponseRedirect(reverse('submission_status', args=(new_submission.id,))), None
 
 
-class ProblemDetail(ProblemMixin, LoginRequiredMixin, ProblemClarificationsMixin, SolvedProblemMixin, ProblemSubmitMixin, CommentedDetailView):
+class ProblemDetail(ProblemMixin, LoginRequiredMixin, ProblemClarificationsMixin,
+                    SolvedProblemMixin, ProblemSubmitMixin, CommentedDetailView):
     context_object_name = 'problem'
     template_name = 'problem/problem.html'
 
