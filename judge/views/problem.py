@@ -129,7 +129,7 @@ class SolvedProblemMixin(object):
         return self.request.profile
 
 
-class ProblemSolution(SolvedProblemMixin, ProblemMixin, TitleMixin, CommentedDetailView):
+class ProblemSolution(SolvedProblemMixin, ProblemMixin, LoginRequiredMixin, TitleMixin, CommentedDetailView):
     context_object_name = 'problem'
     template_name = 'problem/editorial.html'
 
@@ -441,8 +441,7 @@ class ProblemSubmitMixin:
         return HttpResponseRedirect(reverse('submission_status', args=(new_submission.id,))), None
 
 
-class ProblemDetail(ProblemMixin, ProblemClarificationsMixin, SolvedProblemMixin, ProblemSubmitMixin,
-                    CommentedDetailView):
+class ProblemDetail(ProblemMixin, LoginRequiredMixin, ProblemClarificationsMixin, SolvedProblemMixin, ProblemSubmitMixin, CommentedDetailView):
     context_object_name = 'problem'
     template_name = 'problem/problem.html'
 
@@ -589,7 +588,8 @@ class ProblemPdfView(ProblemMixin, SingleObjectMixin, View):
         return response
 
 
-class ProblemList(QueryStringSortMixin, TitleMixin, SolvedProblemMixin, InfinitePaginationMixin, ListView):
+class ProblemList(LoginRequiredMixin, QueryStringSortMixin, TitleMixin,
+                  SolvedProblemMixin, InfinitePaginationMixin, ListView):
     model = Problem
     title = gettext_lazy('Problem list')
     context_object_name = 'problems'

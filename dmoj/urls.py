@@ -9,7 +9,7 @@ from django.urls import include, path, re_path, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from judge.feed import AtomBlogFeed, AtomCommentFeed, AtomProblemFeed, BlogFeed, CommentFeed, ProblemFeed
+from judge.feed import AtomBlogFeed, AtomCommentFeed, BlogFeed, CommentFeed
 from judge.sitemap import sitemaps
 from judge.views import TitledTemplateView, api, blog, comment, contests, language, license, mailgun, notification, \
     organization, preview, problem, problem_download, problem_manage, ranked_submission, register, stats, status, \
@@ -32,7 +32,6 @@ admin.autodiscover()
 SEND_ACTIVATION_EMAIL = getattr(settings, 'SEND_ACTIVATION_EMAIL', True)
 REGISTRATION_COMPLETE_TEMPLATE = 'registration/registration_complete.html' if SEND_ACTIVATION_EMAIL \
                                  else 'registration/activation_complete.html'
-
 register_patterns = [
     path('activate/complete/',
          TitledTemplateView.as_view(template_name='registration/activation_complete.html',
@@ -201,6 +200,16 @@ urlpatterns = [
     ])),
 
     path('user', user.UserAboutPage.as_view(), name='user_page'),
+    path('cosmetic/', user.cosmetic_list, name='user_cosmetic'),
+    path('edit/nameplate/', user.nameplate_list, name='user_nameplate'),
+    path('edit/nameplate/<int:pk>/equip/', user.nameplate_select, name='user_nameplate_select'),
+    path('edit/nameplate/clear/', user.nameplate_clear, name='user_nameplate_clear'),
+    path('edit/banner/', user.banner_list, name='user_banner'),
+    path('edit/banner/<int:pk>/equip/', user.banner_select, name='user_banner_select'),
+    path('edit/banner/clear/', user.banner_clear, name='user_banner_clear'),
+    path('edit/avatar-frame/', user.avatar_frame_list, name='user_avatar_frame'),
+    path('edit/avatar-frame/<int:pk>/equip/', user.avatar_frame_select, name='user_avatar_frame_select'),
+    path('edit/avatar-frame/clear/', user.avatar_frame_clear, name='user_avatar_frame_clear'),
     path('edit/profile/', user.edit_profile, name='user_edit_profile'),
     path('set-theme/', user.set_theme, name='set_theme'),
     path('data/prepare/', user.UserPrepareData.as_view(), name='user_prepare_data'),
@@ -394,8 +403,8 @@ urlpatterns = [
     ])),
 
     path('feed/', include([
-        path('problems/rss/', ProblemFeed(), name='problem_rss'),
-        path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
+        # path('problems/rss/', ProblemFeed(), name='problem_rss'),
+        # path('problems/atom/', AtomProblemFeed(), name='problem_atom'),
         path('comment/rss/', CommentFeed(), name='comment_rss'),
         path('comment/atom/', AtomCommentFeed(), name='comment_atom'),
         path('blog/rss/', BlogFeed(), name='blog_rss'),

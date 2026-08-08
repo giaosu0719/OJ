@@ -19,13 +19,14 @@ from django.db.models.expressions import Value
 from django.db.models.fields import DateField
 from django.db.models.functions import Cast, Coalesce
 from django.forms import Form
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.formats import date_format
-from django.utils.functional import cached_property
+from django.utils.functional import cached_property, wraps
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.decorators.http import require_POST
@@ -36,8 +37,10 @@ from judge.forms import CustomAuthenticationForm, ProfileForm, UserBanForm, User
     newsletter_id
 from judge.models import BlogPost, Organization, Profile, Submission
 from judge.models import Comment
+from judge.models.notification import make_notification
 from judge.performance_points import get_pp_breakdown
 from judge.ratings import rating_class, rating_progress
+from judge.tasks import import_users
 from judge.tasks import prepare_user_data
 from judge.utils.celery import task_status_by_id, task_status_url_by_id
 from judge.utils.infinite_paginator import InfinitePaginationMixin
@@ -51,8 +54,20 @@ from judge.utils.views import DiggPaginatorMixin, QueryStringSortMixin, SingleOb
 from judge.views.blog import PostListBase
 from .contests import ContestRanking
 
+
 __all__ = ['UserPage', 'UserAboutPage', 'UserProblemsPage', 'UserCommentPage', 'UserDownloadData', 'UserPrepareData',
            'users', 'edit_profile']
+
+
+def enable_cosmetics_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not settings.TOMCHIENXU_ENABLE_COSMETICS:
+            return generic_message(request,
+                                   _('Cosmetics disabled'),
+                                   _('Cosmetics are disabled on this site.'), status=403)
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def remap_keys(iterable, mapping):
@@ -86,7 +101,7 @@ class CustomUserMixin(object):
         return super(CustomUserMixin, self).dispatch(request, *args, **kwargs)
 
 
-class UserPage(TitleMixin, UserMixin, DetailView):
+class UserPage(TitleMixin, UserMixin, LoginRequiredMixin, DetailView):
     template_name = 'user/user-base.html'
 
     def get_object(self, queryset=None):
@@ -185,7 +200,7 @@ class CustomPasswordChangeView(PasswordChangeView):
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
 
-class UserAboutPage(UserPage):
+class UserAboutPage(UserPage, LoginRequiredMixin):
     template_name = 'user/user-about.html'
 
     def get_context_data(self, **kwargs):
@@ -235,7 +250,30 @@ class UserBan(UserMixin, TitleMixin, SingleObjectFormView):
     def form_valid(self, form):
         user = self.object
         with revisions.create_revision(atomic=True):
-            user.ban_user(form.cleaned_data['ban_reason'])
+            expires_at = form.cleaned_data['ban_expires_at']
+            reason = form.cleaned_data['ban_reason']
+
+            if expires_at is not None:
+                if expires_at <= timezone.now():
+                    form.add_error('ban_expires_at', _('Ban expiration must be in the future.'))
+                    return self.form_invalid(form)
+                else:
+                    user.temporarily_ban_user(reason=reason, expires_at=expires_at)
+                    make_notification(
+                        [user.id],
+                        _('Temporarily banned!'),
+                        _('You have been temporarily banned from the site. \
+                        Reason: {0}. Ban expires at {1}.')
+                        .format(reason, date_format(expires_at, use_l10n=True)),
+                        popup=True,
+                    )
+            else:
+                user.ban_user(reason=reason)
+                make_notification([user.id], _('Banned!'),
+                                  _('You have been banned from the site. \
+                                    Reason: {0}').format(reason),
+                                  popup=True)
+
             revisions.set_user(self.request.user)
             revisions.set_comment(_('Banned by %s') % self.request.user)
 
@@ -478,6 +516,153 @@ class UserDownloadData(LoginRequiredMixin, UserDataMixin, View):
         return response
 
 
+@enable_cosmetics_required
+@login_required
+def cosmetic_list(request):
+    profile = (
+        Profile.objects
+        .select_related(
+            'active_banner',
+            'active_nameplate',
+            'active_avatar_frame',
+            'user',
+        )
+        .prefetch_related('nameplates', 'banners', 'avatar_frames')
+        .get(pk=request.profile.pk)
+    )
+    return render(request, 'user/user-cosmetic.html', {
+        'profile': profile,
+        'nameplates': profile.nameplates.all(),
+        'banners': profile.banners.all(),
+        'avatar_frames': profile.avatar_frames.all(),
+    })
+
+
+@enable_cosmetics_required
+@login_required
+def nameplate_list(request):
+    profile = (
+        Profile.objects
+        .select_related(
+            'active_banner',
+            'active_nameplate',
+            'user',
+        )
+        .prefetch_related('nameplates')
+        .get(pk=request.profile.pk)
+    )
+    return render(request, 'user/user-nameplate.html', {
+        'profile': profile,
+        'nameplates': profile.nameplates.all(),
+    })
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def nameplate_select(request, pk):
+    nameplate = get_object_or_404(
+        request.profile.nameplates,
+        pk=pk,
+    )
+
+    request.profile.safely_equip_nameplate(nameplate)
+
+    return HttpResponseRedirect(reverse('user_nameplate'))
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def nameplate_clear(request):
+    request.profile.clear_nameplate()
+
+    return HttpResponseRedirect(reverse('user_nameplate'))
+
+
+@enable_cosmetics_required
+@login_required
+def banner_list(request):
+    profile = (
+        Profile.objects
+        .select_related(
+            'active_banner',
+            'active_nameplate',
+            'user',
+        )
+        .prefetch_related('banners')
+        .get(pk=request.profile.pk)
+    )
+    return render(request, 'user/user-banner.html', {
+        'profile': profile,
+        'banners': profile.banners.all(),
+    })
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def banner_select(request, pk):
+    banner = get_object_or_404(
+        request.profile.banners,
+        pk=pk,
+    )
+
+    request.profile.safely_equip_banner(banner)
+
+    return HttpResponseRedirect(reverse('user_banner'))
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def banner_clear(request):
+    request.profile.clear_banner()
+
+    return HttpResponseRedirect(reverse('user_banner'))
+
+
+@enable_cosmetics_required
+@login_required
+def avatar_frame_list(request):
+    profile = (
+        Profile.objects
+        .select_related(
+            'active_avatar_frame',
+            'user',
+        )
+        .prefetch_related('avatar_frames')
+        .get(pk=request.profile.pk)
+    )
+    return render(request, 'user/user-avatar-frame.html', {
+        'profile': profile,
+        'avatar_frames': profile.avatar_frames.all(),
+    })
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def avatar_frame_select(request, pk):
+    avatar_frame = get_object_or_404(
+        request.profile.avatar_frames,
+        pk=pk,
+    )
+
+    request.profile.safely_equip_avatar_frame(avatar_frame)
+
+    return HttpResponseRedirect(reverse('user_avatar_frame'))
+
+
+@enable_cosmetics_required
+@login_required
+@require_POST
+def avatar_frame_clear(request):
+    request.profile.clear_avatar_frame()
+
+    return HttpResponseRedirect(reverse('user_avatar_frame'))
+
+
 @login_required
 def edit_profile(request):
     if request.profile.mute:
@@ -577,7 +762,8 @@ def generate_scratch_codes(request):
     return JsonResponse({'data': {'codes': profile.generate_scratch_codes()}})
 
 
-class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, ListView):
+class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+               TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Leaderboard')
     context_object_name = 'users'
@@ -612,7 +798,8 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
 user_list_view = UserList.as_view()
 
 
-class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin, TitleMixin, ListView):
+class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin,
+                  TitleMixin, LoginRequiredMixin, ListView):
     model = Profile
     title = gettext_lazy('Contributors')
     context_object_name = 'users'
@@ -698,6 +885,59 @@ class UserLogoutView(TitleMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         auth_logout(request)
         return HttpResponseRedirect(request.get_full_path())
+
+
+class ImportUsersView(TitleMixin, TemplateView):
+    template_name = 'user/import/index.html'
+    title = _('Import Users')
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return super().get(self, *args, **kwargs)
+        return HttpResponseForbidden()
+
+
+def import_users_post_file(request):
+    if not request.user.is_superuser or request.method != 'POST':
+        return HttpResponseForbidden()
+    users = import_users.csv_to_dict(request.FILES['csv_file'])
+
+    if not users:
+        return JsonResponse({
+            'done': False,
+            'msg': 'No valid row found. Make sure row containing username.',
+        })
+
+    table_html = render_to_string('user/import/table_csv.html', {
+        'data': users,
+    })
+    return JsonResponse({
+        'done': True,
+        'html': table_html,
+        'data': users,
+    })
+
+
+def import_users_submit(request):
+    import json
+    if not request.user.is_superuser or request.method != 'POST':
+        return HttpResponseForbidden()
+
+    users = json.loads(request.body)['users']
+    log = import_users.import_users(users)
+    return JsonResponse({
+        'msg': log,
+    })
+
+
+def sample_import_users(request):
+    if not request.user.is_superuser or request.method != 'GET':
+        return HttpResponseForbidden()
+    filename = 'import_sample.csv'
+    content = ','.join(import_users.fields) + '\n' + ','.join(import_users.descriptions)
+    response = HttpResponse(content, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
 
 
 class CustomPasswordResetView(PasswordResetView):

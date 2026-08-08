@@ -3,6 +3,7 @@
 td.user-name, td.personal-info, td.organization-name {
     padding-left: 1em;
     text-align: left;
+    position: relative;
 }
 
 tr {
@@ -127,14 +128,16 @@ span.organization {
 }
 
 .user-sidebar {
-    width: 150px;
+    width: 200px;
     padding-left: 15px;
+    margin-right: 15px;
 }
 
 img.user-gravatar {
     display: block;
     border-radius: 6px;
     background-color: white;
+    width: 100%;
 }
 
 .user-content {

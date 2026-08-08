@@ -3,7 +3,8 @@
 .magazine-layout {
     display: flex;
     min-height: calc(100vh - 56px);
-    background: $color_blog_bg;
+    // hihihihihihihihiihihihihih
+    // background: $color_blog_bg;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
     position: relative;
 }
@@ -187,8 +188,16 @@
     align-items: center;
     gap: 16px;
     padding: 16px 24px;
-    background: $color_blog_bg;
-    border-bottom: 1px solid $color_blog_border;
+    // background: $color_blog_bg;
+    // border-bottom: 1px solid $color_blog_border;
+
+    //hihihiihihihih
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border: 1px solid $color_blog_border;
+    border-radius: 4px;
+    margin: 0 24px;
+
     position: sticky;
     top: 56px;
     z-index: 90;
@@ -608,7 +617,10 @@
 
     &:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-color: $color_blog_text_muted;
+        // border-color: $color_blog_text_muted;
+
+        // hihihihi
+        border-color: $highlight_blue;
 
         &::before {
             opacity: 1;

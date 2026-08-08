@@ -93,7 +93,7 @@ class ContestListMixin(object):
         return context
 
 
-class ContestList(InfinitePaginationMixin, TitleMixin, ContestListMixin, ListView):
+class ContestList(LoginRequiredMixin, InfinitePaginationMixin, TitleMixin, ContestListMixin, ListView):
     model = Contest
     paginate_by = 20
     template_name = 'contest/list.html'
@@ -295,7 +295,7 @@ class ContestMixin(object):
         return action(request)
 
 
-class ContestDetail(ContestMixin, TitleMixin, CommentedDetailView):
+class ContestDetail(ContestMixin, LoginRequiredMixin, TitleMixin, CommentedDetailView):
     template_name = 'contest/contest.html'
 
     def is_comment_locked(self):
@@ -381,7 +381,7 @@ class ContestComments(ContestMixin, CommentedDetailView):
         return 'c:%s' % self.object.key
 
 
-class ContestAllProblems(ContestMixin, TitleMixin, DetailView):
+class ContestAllProblems(ContestMixin, LoginRequiredMixin, TitleMixin, DetailView):
     template_name = 'contest/contest-all-problems.html'
 
     def get_title(self):
@@ -750,7 +750,7 @@ class ContestICal(TitleMixin, ContestListMixin, BaseListView):
         return HttpResponse(self.generate_ical(), content_type='text/calendar')
 
 
-class ContestStats(TitleMixin, ContestMixin, DetailView):
+class ContestStats(TitleMixin, ContestMixin, LoginRequiredMixin, DetailView):
     template_name = 'contest/stats.html'
 
     def get_title(self):
@@ -844,12 +844,16 @@ def _serialize_user(row, user_url_tpl, org_url_tpl):
     org_slug = row['_org_slug']
     badge_mini = row['_badge_mini']
     badge_name = row['_badge_name']
+    active_banner_class_name = row['_active_banner_class_name'] or ''
 
     return {
         'username': username,
         'display_name': display_name,
         'name': row['user__user__first_name'],
-        'css_class': Profile.get_user_css_class(row['user__display_rank'], row['user__rating']),
+        'css_class': (' '.join([
+            Profile.get_user_css_class(row['user__display_rank'], row['user__rating']),
+            f'banner-{active_banner_class_name}' if active_banner_class_name else '',
+        ])).strip(),
         'url': user_url_tpl.replace('__USERNAME__', username),
         'organization': {
             'short_name': org_short_name,
@@ -888,6 +892,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         _org_slug=Subquery(_org_qs.values('slug')[:1]),
         _badge_mini=F('user__display_badge__mini'),
         _badge_name=F('user__display_badge__name'),
+        _active_banner_class_name=F('user__active_banner__class_name'),
     ).values(
         'id', 'score', 'frozen_score', 'cumtime', 'frozen_cumtime',
         'tiebreaker', 'frozen_tiebreaker', 'is_disqualified', 'virtual',
@@ -896,7 +901,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         'user__username_display_override',
         'user__user__username', 'user__user__first_name',
         'rating__rating',
-        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name',
+        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name',
     )
 
     participations_data = []
@@ -929,7 +934,7 @@ def _add_ranks_to_participation_json(participations):
         last_key = key
 
 
-class ContestRankingBase(ContestMixin, TitleMixin, DetailView):
+class ContestRankingBase(ContestMixin, LoginRequiredMixin, TitleMixin, DetailView):
     template_name = 'contest/ranking.html'
     tab = None
 

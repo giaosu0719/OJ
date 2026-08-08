@@ -12,8 +12,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db.models import Q
-from django.forms import BooleanField, CharField, ChoiceField, DateInput, Form, ModelForm, MultipleChoiceField, \
-    formset_factory, inlineformset_factory
+from django.forms import BooleanField, CharField, ChoiceField, DateInput, DateTimeField, Form, ModelForm, \
+    MultipleChoiceField, formset_factory, inlineformset_factory
 from django.forms.widgets import DateTimeInput
 from django.template.defaultfilters import filesizeformat
 from django.urls import reverse, reverse_lazy
@@ -56,7 +56,7 @@ class ProfileForm(ModelForm):
     class Meta:
         model = Profile
         fields = ['about', 'display_badge', 'organizations', 'timezone', 'language', 'ace_theme',
-                  'site_theme', 'user_script']
+                  'site_theme', 'user_script', 'display_connhen_balance']
         widgets = {
             'display_badge': Select2Widget(attrs={'style': 'width:200px'}),
             'timezone': Select2Widget(attrs={'style': 'width:200px'}),
@@ -573,15 +573,34 @@ class CustomAuthenticationForm(AuthenticationForm, SocialAuthMixin):
                     contest__is_organization_private=False,
                     is_disqualified=True,
                 ).select_related('contest').order_by('contest__end_time')
+
+            if user.profile.ban_expires_at is not None:
+                message = _('This account has been banned until %(date)s. Reason: %(reason)s') % {
+                    'date': timezone.localtime(user.profile.ban_expires_at).strftime('%Y-%m-%d %H:%M:%S'),
+                    'reason': user.profile.ban_reason,
+                }
+            else:
+                message = _('This account has been banned. Reason: %s') % user.profile.ban_reason
+
             raise forms.ValidationError(
-                _('This account has been banned. Reason: %s') % user.profile.ban_reason,
+                message,
                 code='banned',
             )
         super(CustomAuthenticationForm, self).confirm_login_allowed(user)
 
 
 class UserBanForm(Form):
-    ban_reason = CharField()
+    ban_reason = CharField(widget=forms.Textarea)
+    ban_expires_at = DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(
+            attrs={
+                'type': 'datetime-local',
+            },
+            format='%Y-%m-%dT%H:%M:%S',
+        ),
+        help_text=_('Leave empty for permanent ban.'),
+    )
 
 
 class NoAutoCompleteCharField(forms.CharField):

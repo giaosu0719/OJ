@@ -32,8 +32,8 @@ ALLOWED_HOSTS = []
 CSRF_FAILURE_VIEW = 'judge.views.widgets.csrf_failure'
 
 SITE_ID = 1
-SITE_NAME = 'DMOJ'
-SITE_LONG_NAME = 'DMOJ: Modern Online Judge'
+SITE_NAME = 'TCOJ'
+SITE_LONG_NAME = 'TCOJ - Together Cpp Online Judge'
 SITE_ADMIN_EMAIL = ''
 
 DMOJ_REQUIRE_STAFF_2FA = True
@@ -95,6 +95,10 @@ VNOJ_HOMEPAGE_TOP_USERS_COUNT = 5
 
 VNOJ_DISPLAY_RANKS = (
     ('user', _('Normal User')),
+    ('gay', _('Gay')),
+    ('champion', _('Latest Champion')),
+    ('rainbow', _('Cầu vồng trong tim em')),
+
     ('setter', _('Problem Setter')),
     ('daor', _('Bedao Team')),
     ('staff', _('Staff')),
@@ -247,7 +251,7 @@ DISCORD_WEBHOOK = {
     'queue_time_stats': None,
 }
 
-SITE_FULL_URL = None  # ie 'https://oj.vnoi.info', please remove the last / if needed
+SITE_FULL_URL = None  # ie 'https://oj.tcpp.edu.vn', please remove the last / if needed
 
 ACE_URL = '/static/vnoj/ace/1.4.14'
 SELECT2_JS_URL = '/static/vnoj/select2/4.0.3/js/select2.min.js'
@@ -369,13 +373,13 @@ NOFOLLOW_EXCLUDED = set()
 TIMEZONE_MAP = 'https://static.dmoj.ca/assets/earth.jpg'
 
 TERMS_OF_SERVICE_URL = None
-DEFAULT_USER_LANGUAGE = 'CPP20'
+DEFAULT_USER_LANGUAGE = 'CPP14'
 
 INLINE_JQUERY = True
 INLINE_FONTAWESOME = True
 JQUERY_JS = '/static/vnoj/jquery/3.4.1/jquery.min.js'
 FONTAWESOME_CSS = '/static/vnoj/font-awesome/4.3.0/css/font-awesome.min.css'
-DMOJ_CANONICAL = 'oj.vnoi.info'
+DMOJ_CANONICAL = 'oj.tcpp.edu.vn'
 
 # Application definition
 
@@ -868,6 +872,10 @@ ACE_DEFAULT_LIGHT_THEME = DMOJ_THEME_DEFAULT_ACE_THEME['light']
 ACE_DEFAULT_DARK_THEME = DMOJ_THEME_DEFAULT_ACE_THEME['dark']
 # Only allow OAuth login
 OAUTH_ONLY = False
+
+TOMCHIENXU_GLOBALLY_DISPLAY_CONNHEN_BALANCE = False
+TOMCHIENXU_ENABLE_COSMETICS = False
+TOMCHIENXU_CUSTOM_THEME = ''
 
 try:
     with open(os.path.join(os.path.dirname(__file__), 'local_settings.py')) as f:

@@ -1,15 +1,20 @@
 @use 'sass:color';
+@use "vars-common" as *;
 @forward "vars-common";
 
 $is_light_theme: true;
 
 $color_primary0: #fff;
+
+$color_primary36: #ffffff;
+
 $color_primary5: #f8f8f8;   // light background
 $color_primary10: #eee;     // background
 $color_primary25: #ccc;     // border
 $color_primary33: #aaa;     // widget
 $color_primary50: #808080;
 $color_primary66: #555;     // tabs
+$color_primary76: #070F2B;  // widget2
 $color_primary75: #231f20;  // widget
 $color_primary90: #111;
 $color_primary100: #000;
@@ -83,7 +88,11 @@ $color_blog_active_bg: #202123;
 $color_blog_accent: #1958c1;
 $color_blog_code_bg: #f7f7f7;
 $color_blog_blockquote_border: #292929;
-$color_blog_vote_active: #1a8917;
+// $color_blog_vote_active: #1a8917;
+//hihihi
+
+$color_blog_vote_active: $highlight_blue;
+
 $color_blog_tag_bg: #f3f4f6;
 $color_blog_tag_border: #e5e7eb;
 $color_blog_tag_text: #374151;
