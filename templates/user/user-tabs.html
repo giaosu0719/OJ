@@ -12,6 +12,9 @@
     {% if request.user.has_perm('judge.view_all_user_comment') %}
         {{ make_tab('comments', 'fa-comments', url('user_comment', user.user.username), _('Comments')) }}
     {% endif %}
+{% endblock %}
+
+{% block tabs_admin %}
     {% if request.user.is_superuser and user.user != request.user and not user.user.is_superuser %}
         {{ make_tab('impersonate', 'fa-eye', url('impersonate-start', user.user.id), _('Impersonate')) }}
     {% endif %}

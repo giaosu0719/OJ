@@ -1,0 +1,49 @@
+<article class="home-post" id="post-{{ post.id }}">
+    <div class="hp-header">
+        <h3 class="hp-title">
+            <a href="{{ url('blog_post', post.id, post.slug) }}">{% if not post.visible %}<i class="fa fa-lock" style="color: red"></i> {% endif %}{{ post.title }}</a>
+        </h3>
+        <div class="hp-header-right">
+            <span class="hp-votes">
+                {% if request.user.is_authenticated %}
+                    <a href="javascript:blog_upvote({{ post.id }});"
+                       class="vote-btn upvote-link fa fa-thumbs-up{% if post.vote_score == 1 %} voted{% endif %}"
+                       title="{{ _('Upvote') }}"></a>
+                    <span class="vote-count" id="post-score-{{ post.id }}">{{ post.score }}</span>
+                    <a href="javascript:blog_downvote({{ post.id }});"
+                       class="vote-btn downvote-link fa fa-thumbs-down{% if post.vote_score == -1 %} voted{% endif %}"
+                       title="{{ _('Downvote') }}"></a>
+                {% else %}
+                    <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})"
+                       class="vote-btn upvote-link fa fa-thumbs-up"
+                       title="{{ _('Please log in to vote') }}"></a>
+                    <span class="vote-count" id="post-score-{{ post.id }}">{{ post.score }}</span>
+                    <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})"
+                       class="vote-btn downvote-link fa fa-thumbs-down"
+                       title="{{ _('Please log in to vote') }}"></a>
+                {% endif %}
+            </span>
+            <span class="hp-comments">
+                <i class="fa fa-comments"></i> {{ post_comment_counts[post.id] or 0 }}
+            </span>
+        </div>
+    </div>
+    <div class="hp-meta">
+        {% with authors=post.authors.all() %}
+            {% if authors %}<span class="hp-authors">{{ link_users(authors) }}</span>{% endif %}
+        {% endwith %}
+        {% if post.sticky %}<i title="Sticky" class="fa fa-star"></i>{% endif %}
+        <span class="hp-time">{{ relative_time(post.publish_on) }}</span>
+    </div>
+    <div class="hp-body">
+        {% cache 86400 'home_post_body' post.id %}
+            {{ post.content|markdown('blog', 'svg', lazy_load=True)|reference|str|safe }}
+        {% endcache %}
+    </div>
+    <button type="button" class="hp-readmore" aria-expanded="false"
+            onclick="home_readmore(this)"
+            data-label="{{ _('Read more') }}" data-label-alt="{{ _('Show less') }}">
+        <span class="hp-rm-label">{{ _('Read more') }}</span>
+        <i class="fa fa-chevron-down hp-rm-icon"></i>
+    </button>
+</article>

@@ -1,5 +1,7 @@
 {% extends "tabs-base.html" %}
 
+{% block tabs_class %}{% endblock %}
+
 {% block tabs %}
     {{ make_tab('list', 'fa-users', url('user_list'), _('Leaderboard')) }}
     {{ make_tab('contributor', 'fa-thumbs-up', url('contributors_list'), _('Contributors')) }}

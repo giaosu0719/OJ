@@ -2,8 +2,9 @@
 <table {% if table_id %}id="{{ table_id }}"{% endif %} class="users-table table striped">
     <thead>
         <tr>
-            <th class="header rank" style="width: 5%;">{{ rank_header or _("Rank") }}</th>
+            <th class="header rank">{{ rank_header or _("Rank") }}</th>
             {% block after_rank_head %}{% endblock %}
+            <th class="header badge-col">{{ _('Badge') }}</th>
             <th class="header username">{{ _('Username') }}</th>
             {% block before_point_head %}{% endblock %}
             <th class="header points">
@@ -22,10 +23,19 @@
         <tr id="user-{{ user.user.username }}" {% block row_extra scoped %}{% endblock %}>
             <td>{{ rank }}</td>
             {% block after_rank scoped %}{% endblock %}
+            <td class="badge-col">
+                {% if user.display_badge %}
+                    <img src="{{ user.display_badge.mini }}" class="user-badge" draggable="false">
+                    <span class="user-badge-name">{{ user.display_badge.name }}</span>
+                {% endif %}
+            </td>
             <td class="user-name">
                 <div>
                     <div style="float:left">
-                        {% block user_name_display scoped %} {{ link_user(user) }} {% endblock %}
+                        <div class="user-handle-row">
+                            <img src="{{ gravatar(user, 40) }}" class="rank-avatar" alt="" draggable="false">
+                            {% block user_name_display scoped %} {{ link_user(user) }} {% endblock %}
+                        </div>
                         <div class="personal-info">
                             {% block personal_info_display scoped %}
                                 <span>{{ user.user.first_name }}</span>
@@ -47,6 +57,7 @@
                         </div>
                     </div>
                 </div>
+            </td>
             {% block before_point scoped %}{% endblock %}
             {% block point scoped %}
                 <td title="{{ user.performance_points|floatformat(2) }}" class="user-points">

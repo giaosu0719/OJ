@@ -1,0 +1,233 @@
+{# ── User card (Codeforces style) ── #}
+{% if request.user.is_authenticated %}
+    <div class="home-sidebox home-user-card">
+        <div class="huc-top">
+        <a href="{{ url('user_page', request.user.username) }}" class="huc-avatar">
+            <img src="{{ gravatar(request.user, 80) }}" alt="{{ request.user.username }}" width="72" height="72">
+        </a>
+        <div class="huc-info">
+            <a href="{{ url('user_page', request.user.username) }}" class="huc-name">{{ request.user.username }}</a>
+            {% set profile = request.profile %}
+            {% if profile.rating is not none %}
+                <div class="huc-rating">
+                    {% if user_rating_rank is defined %}
+                        {% if user_rating_rank == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                        {% elif user_rating_rank == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                        {% elif user_rating_rank == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                        {% else %}<span class="huc-rank-num">#{{ user_rating_rank }}</span>{% endif %}
+                    {% endif %}
+                    <span class="huc-rating-num {{ rating_class(profile) }}">{{ profile.rating }}</span>
+                    <span class="huc-rating-title {{ rating_class(profile) }}">{{ rating_name(profile) }}</span>
+                </div>
+            {% else %}
+                <div class="huc-rating">
+                    <span class="huc-rating-num rate-none">---</span>
+                    <span class="huc-rating-title">Unrated</span>
+                </div>
+            {% endif %}
+            <div class="huc-medals">
+                <span class="htl-medal">TBC {{ _('Medals') }}: {{ profile.badges.count() }}</span>
+            </div>
+        </div>
+        </div>
+        <div class="huc-stats">
+            <a class="huc-stat" href="{{ url('user_problems', request.user.username) }}" title="{{ _('Problems solved') }}">
+                <i class="fa fa-check-circle huc-stat-icon"></i>
+                <span class="huc-stat-num">{{ user_solved_count or 0 }}</span>
+                <span class="huc-stat-lbl">{{ _('Solved') }}</span>
+            </a>
+            <a class="huc-stat" href="{{ url('all_user_submissions', request.user.username) }}" title="{{ _('Submissions') }}">
+                <i class="fa fa-paper-plane huc-stat-icon"></i>
+                <span class="huc-stat-num">{{ user_submissions_count or 0 }}</span>
+                <span class="huc-stat-lbl">{{ _('Submissions') }}</span>
+            </a>
+            <a class="huc-stat" href="{{ url('user_page', request.user.username) }}" title="TBC Champ">
+                <i class="fa fa-trophy huc-stat-icon"></i>
+                <span class="huc-stat-num">{{ user_champ_count or 0 }}</span>
+                <span class="huc-stat-lbl">TBC Champ</span>
+            </a>
+        </div>
+    </div>
+{% else %}
+    <div class="home-sidebox home-auth-box">
+        <p class="haq-text">{{ _('Sign in to track your progress.') }}</p>
+        <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}" class="hero-btn hero-btn-primary hero-btn-sm">{{ _('Log in') }}</a>
+        {% if REGISTRATION_OPEN %}
+            <a href="{{ url('registration_register') }}" class="hero-btn hero-btn-sm">{{ _('Sign up') }}</a>
+        {% endif %}
+    </div>
+{% endif %}
+
+{# ── Contests (small widget) ── #}
+<div class="home-sidebox htl-widget hw-contests">
+    <div class="htl-head">
+        <h3 class="hsb-title">
+            <i class="fa fa-trophy"></i> {{ _('Contests') }}
+        </h3>
+    </div>
+    <ul class="home-contests">
+        {% for item in home_contests %}
+            <li>
+            {% if item %}
+                {% set contest, live = item %}
+                <a href="{{ url('contest_view', contest.key) }}">
+                    <span class="hc-name">{{ contest.name }}</span>
+                    {% if live %}
+                    <span class="hc-time time-remaining" data-secs="{{ contest.time_before_end|seconds }}"
+                           data-countdown="short">
+                        <i class="fa fa-clock-o"></i>
+                        {{ _('Ends in %(countdown)s', countdown=contest.time_before_end|countdown_short) }}
+                    </span>
+                    <span class="hc-dot hc-dot-live" title="{{ _('Ongoing') }}"></span>
+                    {% else %}
+                    <span class="hc-time time-remaining" data-secs="{{ contest.time_before_start|seconds }}"
+                           data-countdown="short">
+                        <i class="fa fa-hourglass-start"></i>
+                        {{ _('Starts in %(countdown)s', countdown=contest.time_before_start|countdown_short) }}
+                    </span>
+                    <span class="hc-dot hc-dot-upcoming" title="{{ _('Upcoming') }}"></span>
+                    {% endif %}
+                </a>
+            {% else %}
+                <span class="hc-empty"></span>
+            {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="htl-footer htl-footer-single">
+        <a href="{{ url('contest_list') }}" class="hc-viewall">{{ _('View all') }} →</a>
+    </div>
+</div>
+
+<div class="home-side-stack">
+{# ── Leaderboard: Top users / TBC / Top contributors ── #}
+{% if top_rated_users or top_tbc_users or top_contrib %}
+<div class="home-sidebox htl-widget htl-widget-users">
+    <div class="htl-head">
+        <h3 class="hsb-title">
+            <i class="fa fa-trophy" id="htl-head-icon"></i>
+            <span id="htl-head-label">{{ _('Top users') }}</span>
+        </h3>
+    </div>
+
+    {% if top_rated_users %}
+    <div class="htl-panel htl-panel-active" data-panel="rating">
+        <ul class="home-top-list">
+            {% for user in top_rated_users %}
+                <li>
+                    <span class="htl-rank">
+                        {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                        {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                        {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                        {% else %}<span class="htl-rank-num">#{{ loop.index }}</span>{% endif %}
+                    </span>
+                    <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                        <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                    </a>
+                    <span class="htl-user">{{ link_user(user) }}</span>
+                    <span class="htl-value {{ rating_class(user) }}">{{ user.rating }}</span>
+                </li>
+            {% endfor %}
+            {% for i in range(home_top_users_count - top_rated_users|length) %}
+                <li class="htl-empty"></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if top_tbc_users %}
+    <div class="htl-panel" data-panel="tbc">
+        <ul class="home-top-list">
+            {% for user in top_tbc_users %}
+                <li>
+                    <span class="htl-rank">
+                        {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                        {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                        {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                        {% else %}<span class="htl-rank-num">#{{ loop.index }}</span>{% endif %}
+                    </span>
+                    <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                        <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                    </a>
+                    <span class="htl-user">{{ link_user(user) }}</span>
+                    <span class="htl-value {{ rating_class(user) }}" title="TBC medals">{{ user.badge_count }}</span>
+                </li>
+            {% endfor %}
+            {% for i in range(home_top_users_count - top_tbc_users|length) %}
+                <li class="htl-empty"></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if top_contrib %}
+    <div class="htl-panel" data-panel="contrib">
+        <ul class="home-top-list">
+            {% for user in top_contrib %}
+                <li>
+                    <span class="htl-rank">
+                        {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                        {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                        {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                        {% else %}<span class="htl-rank-num">{{ loop.index }}</span>{% endif %}
+                    </span>
+                    <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                        <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                    </a>
+                    <span class="htl-user">{{ link_user(user) }}</span>
+                    <span class="htl-value">{{ user.contribution_points }}</span>
+                </li>
+            {% endfor %}
+            {% for i in range(home_top_users_count - top_contrib|length) %}
+                <li class="htl-empty"></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="htl-tabs">
+        <button type="button" class="htl-tab htl-tab-active" data-tab="rating"
+                data-label="{{ _('Top users') }}" data-icon="fa-trophy"
+                title="{{ _('Top users') }}" onclick="home_switch_tab(this)">
+            <i class="fa fa-trophy"></i>
+        </button>
+        <button type="button" class="htl-tab" data-tab="tbc"
+                data-label="{{ _('Top TBC') }}" data-icon="fa-heart"
+                title="TBC" onclick="home_switch_tab(this)">
+            <i class="fa fa-heart"></i>
+        </button>
+        <button type="button" class="htl-tab" data-tab="contrib"
+                data-label="{{ _('Top contributors') }}" data-icon="fa-star"
+                title="{{ _('Top contributors') }}" onclick="home_switch_tab(this)">
+            <i class="fa fa-star"></i>
+        </button>
+    </div>
+</div>
+{% endif %}
+
+{# ── Recent comments ── #}
+{% if comments %}
+<div class="home-sidebox htl-widget hw-comments">
+    <div class="htl-head">
+        <h3 class="hsb-title"><i class="fa fa-comments"></i> {{ _('Recent comments') }}</h3>
+    </div>
+    <ul class="home-comments">
+        {% for comment in comments %}
+            <li>
+                <span class="htl-avatar hc-avatar">
+                    <img src="{{ gravatar(comment.author, 32) }}" alt="{{ comment.author.user.username }}" loading="lazy">
+                </span>
+                <span class="hc-comment">
+                    <span class="hc-author">{{ link_user(comment.author) }}</span>
+                    <a href="{{ comment.link }}#comment-{{ comment.id }}">{{ comment.page_title }}</a>
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="htl-footer">
+        <span class="htl-foot-cell">TBC</span>
+        <span class="htl-foot-cell">{{ _('View all') }} &rarr;</span>
+    </div>
+</div>
+{% endif %}
+</div>

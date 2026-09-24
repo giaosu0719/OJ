@@ -40,6 +40,7 @@ from judge.comments import CommentedDetailView
 from judge.contest_format import ICPCContestFormat
 from judge.forms import ContestAnnouncementForm, ContestCloneForm, ContestDownloadDataForm, ContestForm, \
     ProposeContestProblemFormSet
+from judge.jinja2.gravatar import gravatar
 from judge.models import Contest, ContestAnnouncement, ContestMoss, ContestParticipation, ContestProblem, \
     ContestSubmission, ContestTag, Language, Organization, Problem, ProblemClarification, Profile, Solution, Submission
 from judge.ratings import RATING_CLASS, RATING_LEVELS, RATING_VALUES
@@ -845,11 +846,14 @@ def _serialize_user(row, user_url_tpl, org_url_tpl):
     badge_mini = row['_badge_mini']
     badge_name = row['_badge_name']
     active_banner_class_name = row['_active_banner_class_name'] or ''
+    email = row['_email'] or ''
+    gravatar_url = gravatar(email, 40)
 
     return {
         'username': username,
         'display_name': display_name,
         'name': row['user__user__first_name'],
+        'gravatar_url': gravatar_url,
         'css_class': (' '.join([
             Profile.get_user_css_class(row['user__display_rank'], row['user__rating']),
             f'banner-{active_banner_class_name}' if active_banner_class_name else '',
@@ -893,6 +897,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         _badge_mini=F('user__display_badge__mini'),
         _badge_name=F('user__display_badge__name'),
         _active_banner_class_name=F('user__active_banner__class_name'),
+        _email=F('user__user__email'),
     ).values(
         'id', 'score', 'frozen_score', 'cumtime', 'frozen_cumtime',
         'tiebreaker', 'frozen_tiebreaker', 'is_disqualified', 'virtual',
@@ -901,7 +906,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         'user__username_display_override',
         'user__user__username', 'user__user__first_name',
         'rating__rating',
-        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name',
+        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name', '_email',
     )
 
     participations_data = []
@@ -1062,7 +1067,7 @@ class ContestRanking(ContestRankingBase):
     @property
     def json_cache_key(self):
         return f'contest_ranking_json_{self.object.key}_{self.show_virtual}_{self.is_frozen}_' \
-               f'{self.request.LANGUAGE_CODE}'
+               f'{self.request.LANGUAGE_CODE}_avatar_v1'
 
     def _build_ranking_json_data(self):
         contest = self.object

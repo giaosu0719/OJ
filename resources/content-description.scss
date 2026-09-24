@@ -12,6 +12,27 @@
     margin-right: auto;
 }
 
+#common-content,
+#blog-container {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#content .content-description,
+#common-content .tabs,
+#blog-container .tabs {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#content .tabs {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 @media (min-width: 700px) {
     #common-content {
         display: flex;
@@ -34,7 +55,7 @@
     #content-right {
         flex: 1;
         max-width: 12.5em;
-        padding-left: 1.5em;
+        padding-left: 2em;
         padding-top: 1em;
 
         .info-float {
@@ -45,6 +66,10 @@
             width: 100%;
         }
     }
+
+    #content-right.problem-page {
+        padding-top: calc(1.231 * 2em + 48px);
+    }
 }
 
 @media not all and (min-width: 700px) {
@@ -53,6 +78,13 @@
         width: 100% !important;
         position: static !important;
         box-sizing: border-box;
+    }
+
+    #content .problem-screen-title {
+        width: 100%;
+        margin: 0 0 24px;
+        max-width: none;
+        padding: 12px 16px;
     }
 }
 
@@ -82,4 +114,57 @@ a.view-pdf {
     .toggled {
         margin-left: 1.3em;
     }
+}
+
+#common-content,
+#blog-container {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#content .tabs,
+#content .content-description {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#content-left .problem-screen-title {
+    width: 100%;
+    margin: 0 0 24px;
+    box-sizing: border-box;
+    border: 1px solid $color_primary25;
+    border-radius: $widget_border_radius;
+    background: $color_blog_card_bg;
+    padding: 12px 48px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#content #submit.tab-content,
+#content #comments.tab-content {
+    background: $color_blog_card_bg;
+    border: 1px solid $color_blog_border;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(111, 161, 224, 0.08), 0 4px 14px rgba(111, 161, 224, 0.16);
+    padding: 20px 24px;
+    margin-top: 12px;
+}
+
+#common-content.narrow-1420 #content-left.split-common-content > .content-description.screen {
+    border: 1px solid $color_primary25;
+    border-radius: $widget_border_radius;
+    background: $color_blog_card_bg;
+    box-sizing: border-box;
+    padding: 20px 24px;
+}
+
+#common-content.problem-statement-box #content-left.split-common-content > .content-description.screen {
+    border: 1px solid $color_primary25;
+    border-radius: $widget_border_radius;
+    background: $color_blog_card_bg;
+    box-sizing: border-box;
+    padding: 20px 24px;
 }

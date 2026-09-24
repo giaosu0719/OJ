@@ -261,6 +261,32 @@ textarea:focus {
     }
 }
 
+.tabs-rowwrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5em 1em;
+
+    > .tabs {
+        margin-bottom: 0;
+    }
+}
+
+.tabs-rowwrapper > .tabs-admin-block {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0 0.25em;
+
+    .tab a, .tab span {
+        border-top-width: 0 !important;
+        color: inherit;
+        background: transparent;
+        text-shadow: none;
+    }
+}
+
 // Bootstrap-y pagination
 ul.pagination a:hover {
     background: rgba($color_primary100, 0.55);

@@ -225,7 +225,7 @@
         extraHeaderCols: function (meta) {
             return '<th class="penalty">' + escapeHtml(meta.penaltyLabel) + '</th>';
         },
-        colspanTotalAC: 4,
+        colspanTotalAC: 5,
 
         renderProblemCell: function (entry, problem, participationId, firstSolves, meta) {
             if (!entry) return '<td></td>';
@@ -355,7 +355,7 @@
         // Fill in defaults for optional properties.
         return {
             extraHeaderCols: renderer.extraHeaderCols || function () { return ''; },
-            colspanTotalAC: renderer.colspanTotalAC || 3,
+            colspanTotalAC: renderer.colspanTotalAC || 4,
             renderProblemCell: renderer.renderProblemCell,
             renderResultCell: renderer.renderResultCell,
         };
@@ -365,6 +365,7 @@
         var isICPC = contest.format === 'icpc';
         var html = '<thead><tr>';
         html += '<th class="header rank">' + escapeHtml(contest.rank_header || 'Rank') + '</th>';
+        html += '<th class="header badge-col">Badge</th>';
         html += '<th class="header username">Username</th>';
         html += '<th class="header points">Points</th>';
         html += renderer.extraHeaderCols({ contest: contest, penaltyLabel: 'Penalty' });
@@ -416,7 +417,10 @@
         var inner = isGhost
             ? '<span style="display: inline-block;">' + name + '</span>'
             : '<a href="' + escapeHtml(u.url) + '" style="display: inline-block;">' + name + '</a>';
-        var html = '<span class="' + escapeHtml(spanClass) + '">' + inner;
+        var html = (u.gravatar_url
+            ? '<img src="' + escapeHtml(u.gravatar_url) + '"' +
+                ' class="rank-avatar" alt="" draggable="false" />'
+            : '') + '<span class="' + escapeHtml(spanClass) + '">' + inner;
         if (u.badge) {
             html += '<img src="' + escapeHtml(u.badge.mini) + '"' +
                 ' title="' + escapeHtml(u.badge.name) + '"' +
@@ -449,6 +453,16 @@
             rankDisplay = escapeHtml(String(p.rank));
         }
         html += '<td>' + rankDisplay + '</td>';
+
+        // Badge cell
+        if (u.badge) {
+            html += '<td class="badge-col">' +
+                '<img src="' + escapeHtml(u.badge.mini) + '" class="user-badge" draggable="false">' +
+                '<span class="user-badge-name">' + escapeHtml(u.badge.name) + '</span>' +
+                '</td>';
+        } else {
+            html += '<td class="badge-col"></td>';
+        }
 
         // Username cell
         html += '<td class="user-name"><div>';

@@ -728,9 +728,8 @@ def generate_api_token(request):
 
 @require_POST
 def set_theme(request):
-    theme = request.POST.get('theme', 'light')
-    if theme not in ('light', 'dark', 'auto'):
-        theme = 'light'
+    # Dark mode is disabled site-wide; only the light theme can be selected.
+    theme = 'light'
     response = HttpResponseRedirect(request.POST.get('next', '/'))
     if request.user.is_authenticated:
         request.profile.site_theme = theme
@@ -789,6 +788,7 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
             key=attrgetter('performance_points', 'problem_count'),
             rank=self.paginate_by * (context['page_obj'].number - 1),
         )
+        context['left_align_tabs'] = True
         context['first_page_href'] = '.'
         context.update(self.get_sort_context())
         context.update(self.get_sort_paginate_context())
@@ -825,6 +825,7 @@ class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMi
             key=attrgetter('contribution_points'),
             rank=self.paginate_by * (context['page_obj'].number - 1),
         )
+        context['left_align_tabs'] = True
         context['first_page_href'] = '.'
         context.update(self.get_sort_context())
         context.update(self.get_sort_paginate_context())

@@ -113,9 +113,11 @@ nav {
                 text-decoration: none;
                 vertical-align: middle;
                 color: #FFF;
-                padding: 14px 7px;
-                height: 20px;
+                padding: 8px 12px; // Điều chỉnh padding cho cân đối
+                margin: 0 4px; // Thêm khoảng cách giữa các ô
                 display: inline-table;
+                transition: all 0.3s ease; // Animation mượt mà
+                border-radius: 6px; // Bo tròn nhẹ mặc định
 
                 &:link {
                     color: #FFF;
@@ -124,15 +126,22 @@ nav {
                 &:hover {
                     color: #FFF;
                     background: rgba(255, 255, 255, 0.25);
-                    margin: 0;
+                    border-top-left-radius: 10px; // Bo tròn góc trên trái
+                    border-top-right-radius: 10px; // Bo tròn góc trên phải
+                    border-bottom-left-radius: 0; // Để góc dưới vuông
+                    border-bottom-right-radius: 0; // Để góc dưới vuông
+                    margin: 0 4px;
                 }
 
                 &.active {
                     color: #FFF;
-
-                    border: 5px solid transparent;
+                    border: 5px solid transparent; 
                     border-bottom: 5px solid $highlight_blue;
-                    padding: 9px 2px;
+                    border-top-left-radius: 10px; // Bo tròn góc trên trái
+                    border-top-right-radius: 10px; // Bo tròn góc trên phải
+                    border-bottom-left-radius: 0; // Để góc dưới vuông
+                    border-bottom-right-radius: 0; // Để góc dưới vuông
+                    padding: 4px 2px;
                 }
 
                 .nav-expand {
@@ -148,7 +157,9 @@ nav {
                 color: #fff;
                 background: $hehehe;
                 margin: 0 !important;
-                box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); // Shadow đậm hơn
+                border-radius: 8px; // "Vuông bo tròn" cho menu con
+                overflow: hidden; // Bo góc cho menu con
 
                 li {
                     a.active {
@@ -161,12 +172,19 @@ nav {
                     display: block;
 
                     a, button {
-                        padding: 8px 20px 8px 8px !important;
+                        padding: 10px 20px 10px 12px !important; // Padding rộng hơn
                         font-size: 0.8em;
                         line-height: 18px;
                         display: block;
+                        border-left: 4px solid transparent; // Mặc định border trong suốt
+                        transition: all 0.2s ease;
+                        border-radius: 0; // Menu con không bo tròn từng mục
+                        margin: 0; // Bỏ margin
+                    }
+                    
+                    a:hover {
                         border-left: 4px solid $highlight_blue;
-                        white-space: nowrap;
+                        background: rgba(255, 255, 255, 0.1);
                     }
                 }
             }

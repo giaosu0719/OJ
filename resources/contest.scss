@@ -212,6 +212,10 @@ form.contest-join-pseudotab {
         height: 2.5em;
     }
 
+    td.badge-col {
+        height: 56px;
+    }
+
     td:not(.user-name, .personal-info) a:hover {
         text-decoration: underline;
     }

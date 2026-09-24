@@ -35,6 +35,23 @@ span.organization {
     padding-left: 0.5em;
 }
 
+.rank-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-right: 0.4em;
+    vertical-align: middle;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.user-handle-row {
+    display: inline-flex;
+    align-items: center;
+}
+
 .users-table {
     th.rank, th.points, th.problems, th.username {
         white-space: nowrap;
@@ -47,6 +64,96 @@ span.organization {
 
     th.username {
         width: 100%;
+    }
+
+    td, th {
+        vertical-align: middle;
+    }
+
+    &:not(#ranking-table) td {
+        height: 70px;
+        max-height: 70px;
+        box-sizing: border-box;
+        padding-top: 0;
+        padding-bottom: 0;
+        overflow: hidden;
+    }
+
+    &:not(#ranking-table) td.user-name {
+        text-align: center;
+        padding-left: 0;
+
+        a, .personal-info {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        > div {
+            height: 70px;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5em;
+            overflow: hidden;
+        }
+
+        > div > div:first-child {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 1.5em;
+        }
+
+        > div > div:first-child > .personal-info {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 5px;
+            height: 1.2em;
+            line-height: 1.2em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+
+    td.badge-col {
+        text-align: center;
+        height: 70px;
+    }
+
+    .user-badge {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        -webkit-user-drag: none;
+        user-select: none;
+    }
+
+    .user-badge-name {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 1.2;
+        font-weight: 600;
+        color: $color_primary50;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    th.badge-col, td.badge-col {
+        width: 100px;
+        box-sizing: border-box;
+    }
+
+    td.badge-col::before {
+        content: '';
+        display: block;
+        width: 100px;
+        height: 1px;
     }
 
     .personal-info {
@@ -76,6 +183,74 @@ span.organization {
         &:link,
         &:visited {
             color: $color_primary0;
+        }
+    }
+}
+
+#content-left.users .h-scrollable-table {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#content .tabs.user-nav-tabs {
+    display: inline-flex;
+    width: fit-content;
+    justify-content: flex-start;
+    background: $color_blog_hover_bg;
+    border: none;
+    border-bottom: none;
+    border-radius: 12px;
+    padding: 4px;
+    margin: 0 0 18px;
+
+    > ul {
+        position: static;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+
+        > li {
+            margin: 0;
+
+            > a, > span {
+                display: inline-block;
+                margin: 0;
+                border: none;
+                border-top-width: 0;
+                border-top: none;
+                border-radius: 9px;
+                padding: 7px 18px;
+                background: transparent;
+                color: $color_blog_text_secondary;
+                font-weight: 600;
+                white-space: nowrap;
+                transition: background-color 0.15s ease, color 0.15s ease;
+            }
+
+            &.active {
+                > a, > span {
+                    background: $highlight_blue;
+                    color: #fff;
+
+                    &:hover, &:focus {
+                        background: $highlight_blue;
+                        color: #fff;
+                    }
+                }
+
+                .tab-icon {
+                    color: #fff;
+                }
+            }
+
+            &:hover > a, &:hover > span {
+                color: $color_link50;
+            }
+
+            &.active:hover > a, &.active:hover > span {
+                color: #fff;
+            }
         }
     }
 }

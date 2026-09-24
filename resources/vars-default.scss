@@ -19,12 +19,14 @@ $color_primary75: #231f20;  // widget
 $color_primary90: #111;
 $color_primary100: #000;
 
-$color_link50: #5b80b9;     // default (title)
+$color_link50: #3f7ac4;     // default (title)
 $color_link75: #1958c1;     // default
-$color_link100: #0645ad;    // hover
+$color_link100: #2a5aa8;    // hover
 $color_link200: #faa700;    // active
 
 $color_pageBg: color.adjust($color_primary5, $lightness: 10%);
+
+$color_home_page_bg: #e9ebef;   // light backdrop so OJ bg differs from white widgets
 
 // custom one-off colours
 $color_contest_ranking_disqualified: #ffa8a8;
@@ -76,14 +78,14 @@ $color_problem_submit_bg: #f9f9f9;
 
 // Blog-specific light mode colors
 $color_blog_bg: #ffffff;
-$color_blog_card_bg: #ffffff;
-$color_blog_sidebar_bg: #f7f7f8;
-$color_blog_border: #dee2e6;
-$color_blog_text_primary: #202123;
+$color_blog_card_bg: #f7fbff;
+$color_blog_sidebar_bg: #eef6fe;
+$color_blog_border: #d4e3f4;
+$color_blog_text_primary: #20304a;
 $color_blog_text_secondary: #565869;
 $color_blog_text_muted: #8e8ea0;
 $color_blog_text_tertiary: #6b7280;
-$color_blog_hover_bg: #ececf1;
+$color_blog_hover_bg: #edf4fd;
 $color_blog_active_bg: #202123;
 $color_blog_accent: #1958c1;
 $color_blog_code_bg: #f7f7f7;
@@ -101,6 +103,7 @@ $color_blog_tag_hover_border: #d1d5db;
 $color_blog_tag_hover_text: #1f2937;
 $color_blog_tag_active_bg: #3b82f6;
 $color_blog_hero_bg: #eff6ff;
+$color_htl_tab_icon: #000000;
 
 $path_to_root: '.';     // relative path from style.css to STATIC_ROOT
 

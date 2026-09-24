@@ -210,6 +210,7 @@ class OrganizationList(DiggPaginatorMixin, TitleMixin, LoginRequiredMixin, ListV
         context = super().get_context_data(**kwargs)
         context['show_all_orgs'] = self.show_all_orgs
         context['search_query'] = self.search_query
+        context['left_align_tabs'] = True
         context.update(paginate_query_context(self.request))
         if self.request.user.is_authenticated:
             user_organizations = self.request.profile.organizations.all()

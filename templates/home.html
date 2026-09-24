@@ -1,13 +1,9 @@
-{% extends "blog/list.html" %}
-{% block before_posts %}
-    {% if misc_config.home_page_top %}
-        {{ render_django(misc_config.home_page_top, request=request, user_count=user_count, problem_count=problem_count, submission_count=submission_count, language_count=language_count, perms=perms) }}
-    {% endif %}
-{% endblock %}
+{% extends "base.html" %}
+
+{% block title_row %}{% endblock %}
+{% block title_ruler %}{% endblock %}
+
 {% block meta %}
-    {% if misc_config.meta_description %}
-        <meta name="description" property="og:description" content="{{ misc_config.meta_description }}">
-    {% endif %}
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -20,4 +16,468 @@
             }
         }
     </script>
+{% endblock %}
+
+{% block media %}
+    {% compress css %}
+        {{ select_css_theme('home.css', 'dark/home.css') }}
+    {% endcompress %}
+{% endblock %}
+
+{% block js_media %}
+    <script>
+        function home_readmore(btn) {
+            if (!btn) return;
+            var post = btn.closest('.home-post');
+            var body = post ? post.querySelector('.hp-body') : null;
+            if (!post || !body) return;
+            if (body.dataset.hpBusy) return;
+
+            var label = btn.querySelector('.hp-rm-label');
+            var collapsed = parseFloat(body.dataset.hpCollapsed);
+            if (!collapsed) {
+                var match = /([\d.]+)px/.exec(getComputedStyle(body).maxHeight);
+                collapsed = match ? parseFloat(match[1]) : 112;
+                body.dataset.hpCollapsed = collapsed;
+            }
+
+            var done = false;
+            var finish = function () {
+                if (done) return;
+                done = true;
+                body.removeEventListener('transitionend', finish);
+                delete body.dataset.hpBusy;
+            };
+
+            if (post.classList.contains('expanded')) {
+                body.style.maxHeight = collapsed + 'px';
+                post.classList.remove('expanded');
+                btn.setAttribute('aria-expanded', 'false');
+                if (label) label.textContent = btn.dataset.label;
+                body.addEventListener('transitionend', finish);
+                window.setTimeout(finish, 800);
+            } else {
+                body.style.maxHeight = 'none';
+                var full = body.scrollHeight;
+                body.style.maxHeight = collapsed + 'px';
+                void body.offsetHeight;
+                body.style.maxHeight = full + 'px';
+                post.classList.add('expanded');
+                btn.setAttribute('aria-expanded', 'true');
+                if (label) label.textContent = btn.dataset.labelAlt;
+                body.addEventListener('transitionend', finish);
+                window.setTimeout(finish, 800);
+            }
+        }
+
+        function home_count_up() {
+            var figures = document.querySelectorAll('.hero-stat-num');
+            if (!figures.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            var animate = function (el) {
+                if (el.dataset.done) return;
+                el.dataset.done = '1';
+                var target = parseInt(el.textContent.replace(/[^\d]/g, ''), 10) || 0;
+                var start = null;
+                var step = function (ts) {
+                    if (start === null) start = ts;
+                    var progress = Math.min((ts - start) / 1200, 1);
+                    var eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(target * eased);
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            };
+
+            window.setTimeout(function () {
+                for (var i = 0; i < figures.length; i++) animate(figures[i]);
+            }, 400);
+        }
+
+        function home_switch_tab(btn) {
+            if (!btn) return;
+            var widget = btn.closest('.htl-widget-users');
+            if (!widget) return;
+            var tab = btn.dataset.tab;
+            var tabs = btn.parentNode;
+            if (tabs) {
+                for (var i = 0; i < tabs.children.length; i++) {
+                    tabs.children[i].classList.toggle('htl-tab-active', tabs.children[i] === btn);
+                }
+            }
+            var panels = widget.querySelectorAll('.htl-panel');
+            for (var j = 0; j < panels.length; j++) {
+                panels[j].classList.toggle('htl-panel-active', panels[j].dataset.panel === tab);
+            }
+            var icon = document.getElementById('htl-head-icon');
+            if (icon && btn.dataset.icon) icon.className = 'fa ' + btn.dataset.icon;
+            var label = document.getElementById('htl-head-label');
+            if (label && btn.dataset.label) label.textContent = btn.dataset.label;
+        }
+
+        $(document).ready(function () {
+            home_count_up();
+
+            try {
+                $('.time-remaining').each(function () {
+                    count_down($(this));
+                });
+            } catch (e) {
+            }
+
+            try {
+                $('.home-post').each(function () {
+                    var body = $(this).find('.hp-body')[0];
+                    var btn = $(this).find('.hp-readmore')[0];
+                    if (!body || !btn) return;
+                    var style = getComputedStyle(body);
+                    var collapsed = parseInt(style.maxHeight, 10) || 112;
+                    if (body.scrollHeight <= collapsed + 8) {
+                        btn.style.display = 'none';
+                        $(this).addClass('fits');
+                    }
+                });
+            } catch (e) {
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    {# top notification #}
+    {% if misc_config.home_page_top %}
+        <div class="home-top-notice">
+            {{ render_django(misc_config.home_page_top, request=request, user_count=user_count, problem_count=problem_count, submission_count=submission_count, language_count=language_count, perms=perms) }}
+        </div>
+    {% endif %}
+
+    <div class="home-layout">
+        {# ──────── MAIN COLUMN ──────── #}
+        <div class="home-main">
+
+            {# ── Hero ── #}
+            <section class="home-hero">
+                <div class="hero-inner">
+                    <h1 class="hero-title">CKTOJ</h1>
+                    <p class="hero-tagline">{{ _('Chuyên Nguyễn Tất Thành Kon Tum 💙') }}</p>
+
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <i class="fa fa-book"></i>
+                            <span class="hero-stat-num">{{ problem_count }}</span>
+                            <span class="hero-stat-lbl">{{ _('Problems') }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <i class="fa fa-users"></i>
+                            <span class="hero-stat-num">{{ user_count }}</span>
+                            <span class="hero-stat-lbl">{{ _('Users') }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <i class="fa fa-paper-plane"></i>
+                            <span class="hero-stat-num">{{ submission_count }}</span>
+                            <span class="hero-stat-lbl">{{ _('Submissions') }}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <i class="fa fa-code"></i>
+                            <span class="hero-stat-num">{{ language_count }}</span>
+                            <span class="hero-stat-lbl">{{ _('Languages') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions">
+                        <a href="https://discord.com/invite/rNMXVeBp2e" class="hero-btn hero-btn-primary">{{ _('Discord') }}</a>
+                        <a href="https://www.instagram.com/dtqgtin_ckt/" class="hero-btn">{{ _('Instagram') }}</a>
+                        <a href="" class="hero-btn">{{ _('TBCOJ') }}</a>
+                    </div>
+                </div>
+            </section>
+
+            {# ── Newsfeed (latest blog posts) ── #}
+            <section class="home-section">
+                <h2 class="home-section-title">
+                    <i class="fa fa-newspaper-o"></i> {{ _('Newsfeed') }}
+                    <a href="{{ url('blog_post_list') }}" class="home-section-more">{{ _('View all') }} &rarr;</a>
+                </h2>
+                <div class="home-posts">
+                    {% for post in posts %}
+                        <article class="home-post">
+                            <div class="hp-header">
+                                <h3 class="hp-title">
+                                    <a href="{{ url('blog_post', post.id, post.slug) }}">{{ post.title }}</a>
+                                </h3>
+                                <span class="hp-comments">
+                                    <i class="fa fa-comments"></i> {{ post_comment_counts[post.id] or 0 }}
+                                </span>
+                            </div>
+                            <div class="hp-meta">
+                                {% with authors=post.authors.all() %}
+                                    {% if authors %}<span class="hp-authors">{{ link_users(authors) }}</span>{% endif %}
+                                {% endwith %}
+                                <span class="hp-time">{{ relative_time(post.publish_on) }}</span>
+                            </div>
+                            <div class="hp-body">
+                                {{ post.content|markdown('blog', 'svg', lazy_load=True)|reference|str|safe }}
+                            </div>
+                            <button type="button" class="hp-readmore" aria-expanded="false"
+                                    onclick="home_readmore(this)"
+                                    data-label="{{ _('Read more') }}" data-label-alt="{{ _('Show less') }}">
+                                <span class="hp-rm-label">{{ _('Read more') }}</span>
+                                <i class="fa fa-chevron-down hp-rm-icon"></i>
+                            </button>
+                        </article>
+                    {% endfor %}
+
+                    {% if not posts %}
+                        <div class="home-empty">{{ _('No posts yet.') }}</div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        {# ──────── SIDEBAR ──────── #}
+        <div class="home-sidebar">
+
+            {# ── User card (Codeforces style) ── #}
+            {% if request.user.is_authenticated %}
+                <div class="home-sidebox home-user-card">
+                    <div class="huc-top">
+                    <a href="{{ url('user_page', request.user.username) }}" class="huc-avatar">
+                        <img src="{{ gravatar(request.user, 80) }}" alt="{{ request.user.username }}" width="72" height="72">
+                    </a>
+                    <div class="huc-info">
+                        <a href="{{ url('user_page', request.user.username) }}" class="huc-name">{{ request.user.username }}</a>
+                        {% set profile = request.profile %}
+                        {% if profile.rating is not none %}
+                            <div class="huc-rating">
+                                {% if user_rating_rank is defined %}
+                                    {% if user_rating_rank == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                                    {% elif user_rating_rank == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                                    {% elif user_rating_rank == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                                    {% else %}<span class="huc-rank-num">#{{ user_rating_rank }}</span>{% endif %}
+                                {% endif %}
+                                <span class="huc-rating-num {{ rating_class(profile) }}">{{ profile.rating }}</span>
+                                <span class="huc-rating-title {{ rating_class(profile) }}">{{ rating_name(profile) }}</span>
+                            </div>
+                        {% else %}
+                            <div class="huc-rating">
+                                <span class="huc-rating-num rate-none">---</span>
+                                <span class="huc-rating-title">Unrated</span>
+                            </div>
+                        {% endif %}
+                        <div class="huc-medals">
+                            <span class="htl-medal">TBC {{ _('Medals') }}: {{ profile.badges.count() }}</span>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="huc-stats">
+                        <a class="huc-stat" href="{{ url('user_problems', request.user.username) }}" title="{{ _('Problems solved') }}">
+                            <i class="fa fa-check-circle huc-stat-icon"></i>
+                            <span class="huc-stat-num">{{ user_solved_count or 0 }}</span>
+                            <span class="huc-stat-lbl">{{ _('Solved') }}</span>
+                        </a>
+                        <a class="huc-stat" href="{{ url('all_user_submissions', request.user.username) }}" title="{{ _('Submissions') }}">
+                            <i class="fa fa-paper-plane huc-stat-icon"></i>
+                            <span class="huc-stat-num">{{ user_submissions_count or 0 }}</span>
+                            <span class="huc-stat-lbl">{{ _('Submissions') }}</span>
+                        </a>
+                        <a class="huc-stat" href="{{ url('user_page', request.user.username) }}" title="TBC Champ">
+                            <i class="fa fa-trophy huc-stat-icon"></i>
+                            <span class="huc-stat-num">{{ user_champ_count or 0 }}</span>
+                            <span class="huc-stat-lbl">TBC Champ</span>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="home-sidebox home-auth-box">
+                    <p class="haq-text">{{ _('Sign in to track your progress.') }}</p>
+                    <a href="{{ url('auth_login') }}?next={{ request.get_full_path() }}" class="hero-btn hero-btn-primary hero-btn-sm">{{ _('Log in') }}</a>
+                    {% if REGISTRATION_OPEN %}
+                        <a href="{{ url('registration_register') }}" class="hero-btn hero-btn-sm">{{ _('Sign up') }}</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {# ── Contests (small widget) ── #}
+            <div class="home-sidebox htl-widget hw-contests">
+                <div class="htl-head">
+                    <h3 class="hsb-title">
+                        <i class="fa fa-trophy"></i> {{ _('Contests') }}
+                    </h3>
+                </div>
+                <ul class="home-contests">
+                    {% for item in home_contests %}
+                        <li>
+                        {% if item %}
+                            {% set contest, live = item %}
+                            <a href="{{ url('contest_view', contest.key) }}">
+                                <span class="hc-name">{{ contest.name }}</span>
+                                {% if live %}
+                                <span class="hc-time time-remaining" data-secs="{{ contest.time_before_end|seconds }}"
+                                       data-countdown="short">
+                                    <i class="fa fa-clock-o"></i>
+                                    {{ _('Ends in %(countdown)s', countdown=contest.time_before_end|countdown_short) }}
+                                </span>
+                                <span class="hc-dot hc-dot-live" title="{{ _('Ongoing') }}"></span>
+                                {% else %}
+                                <span class="hc-time time-remaining" data-secs="{{ contest.time_before_start|seconds }}"
+                                       data-countdown="short">
+                                    <i class="fa fa-hourglass-start"></i>
+                                    {{ _('Starts in %(countdown)s', countdown=contest.time_before_start|countdown_short) }}
+                                </span>
+                                <span class="hc-dot hc-dot-upcoming" title="{{ _('Upcoming') }}"></span>
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <span class="hc-empty"></span>
+                        {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="htl-footer htl-footer-single">
+                    <a href="{{ url('contest_list') }}" class="hc-viewall">{{ _('View all') }} →</a>
+                </div>
+            </div>
+
+            <div class="home-side-stack">
+            {# ── Leaderboard: Top users / TBC / Top contributors ── #}
+            {% if top_rated_users or top_tbc_users or top_contrib %}
+            <div class="home-sidebox htl-widget htl-widget-users">
+                <div class="htl-head">
+                    <h3 class="hsb-title">
+                        <i class="fa fa-trophy" id="htl-head-icon"></i>
+                        <span id="htl-head-label">{{ _('Top users') }}</span>
+                    </h3>
+                </div>
+
+                {% if top_rated_users %}
+                <div class="htl-panel htl-panel-active" data-panel="rating">
+                    <ul class="home-top-list">
+                        {% for user in top_rated_users %}
+                            <li>
+                                <span class="htl-rank">
+                                    {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                                    {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                                    {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                                    {% else %}<span class="htl-rank-num">#{{ loop.index }}</span>{% endif %}
+                                </span>
+                                <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                                    <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                                </a>
+                                <span class="htl-user">{{ link_user(user) }}</span>
+                                <span class="htl-value {{ rating_class(user) }}">{{ user.rating }}</span>
+                            </li>
+                        {% endfor %}
+                        {% for i in range(home_top_users_count - top_rated_users|length) %}
+                            <li class="htl-empty"></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if top_tbc_users %}
+                <div class="htl-panel" data-panel="tbc">
+                    <ul class="home-top-list">
+                        {% for user in top_tbc_users %}
+                            <li>
+                                <span class="htl-rank">
+                                    {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                                    {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                                    {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                                    {% else %}<span class="htl-rank-num">#{{ loop.index }}</span>{% endif %}
+                                </span>
+                                <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                                    <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                                </a>
+                                <span class="htl-user">{{ link_user(user) }}</span>
+                                <span class="htl-value {{ rating_class(user) }}" title="TBC medals">{{ user.badge_count }}</span>
+                            </li>
+                        {% endfor %}
+                        {% for i in range(home_top_users_count - top_tbc_users|length) %}
+                            <li class="htl-empty"></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if top_contrib %}
+                <div class="htl-panel" data-panel="contrib">
+                    <ul class="home-top-list">
+                        {% for user in top_contrib %}
+                            <li>
+                                <span class="htl-rank">
+                                    {% if loop.index == 1 %}<i class="fa fa-trophy htl-trophy htl-gold"></i>
+                                    {% elif loop.index == 2 %}<i class="fa fa-trophy htl-trophy htl-silver"></i>
+                                    {% elif loop.index == 3 %}<i class="fa fa-trophy htl-trophy htl-bronze"></i>
+                                    {% else %}<span class="htl-rank-num">{{ loop.index }}</span>{% endif %}
+                                </span>
+                                <a href="{{ url('user_page', user.user.username) }}" class="htl-avatar">
+                                    <img src="{{ gravatar(user, 32) }}" alt="{{ user.user.username }}" loading="lazy">
+                                </a>
+                                <span class="htl-user">{{ link_user(user) }}</span>
+                                <span class="htl-value">{{ user.contribution_points }}</span>
+                            </li>
+                        {% endfor %}
+                        {% for i in range(home_top_users_count - top_contrib|length) %}
+                            <li class="htl-empty"></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="htl-tabs">
+                    <button type="button" class="htl-tab htl-tab-active" data-tab="rating"
+                            data-label="{{ _('Top users') }}" data-icon="fa-trophy"
+                            title="{{ _('Top users') }}" onclick="home_switch_tab(this)">
+                        <i class="fa fa-trophy"></i>
+                    </button>
+                    <button type="button" class="htl-tab" data-tab="tbc"
+                            data-label="{{ _('Top TBC') }}" data-icon="fa-heart"
+                            title="TBC" onclick="home_switch_tab(this)">
+                        <i class="fa fa-heart"></i>
+                    </button>
+                    <button type="button" class="htl-tab" data-tab="contrib"
+                            data-label="{{ _('Top contributors') }}" data-icon="fa-star"
+                            title="{{ _('Top contributors') }}" onclick="home_switch_tab(this)">
+                        <i class="fa fa-star"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            {# ── Recent comments ── #}
+            {% if comments %}
+            <div class="home-sidebox htl-widget hw-comments">
+                <div class="htl-head">
+                    <h3 class="hsb-title"><i class="fa fa-comments"></i> {{ _('Recent comments') }}</h3>
+                </div>
+                <ul class="home-comments">
+                    {% for comment in comments %}
+                        <li>
+                            <span class="htl-avatar hc-avatar">
+                                <img src="{{ gravatar(comment.author, 32) }}" alt="{{ comment.author.user.username }}" loading="lazy">
+                            </span>
+                            <span class="hc-comment">
+                                <span class="hc-author">{{ link_user(comment.author) }}</span>
+                                <a href="{{ comment.link }}#comment-{{ comment.id }}">{{ comment.page_title }}</a>
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="htl-footer">
+                    <span class="htl-foot-cell">TBC</span>
+                    <span class="htl-foot-cell">{{ _('View all') }} &rarr;</span>
+                </div>
+            </div>
+            {% endif %}
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block bodyend %}
+    {{ super() }}
+    {% if REQUIRE_JAX %}
+        {% include "mathjax-load.html" %}
+    {% endif %}
 {% endblock %}

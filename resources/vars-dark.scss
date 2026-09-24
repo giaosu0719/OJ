@@ -24,6 +24,8 @@ $color_link200: #d83;   // active
 
 $color_pageBg: #222;    // #222 because some elements should be darker than pageBg
 
+$color_home_page_bg: #1b1b1b;   // darker than widget cards for contrast
+
 // custom one-off colours
 $color_contest_ranking_disqualified: #622;
 
@@ -74,14 +76,14 @@ $color_problem_submit_bg: #1e1e1e;
 
 // Blog-specific dark mode colors
 $color_blog_bg: #1a1a1a;
-$color_blog_card_bg: #2a2a2a;
-$color_blog_sidebar_bg: #1f1f1f;
-$color_blog_border: #3b3b3b;
+$color_blog_card_bg: #26313c;
+$color_blog_sidebar_bg: #1e2833;
+$color_blog_border: #39485a;
 $color_blog_text_primary: #e8e8e8;
 $color_blog_text_secondary: #a0a0a0;
 $color_blog_text_muted: #707070;
 $color_blog_text_tertiary: #888888;
-$color_blog_hover_bg: #333333;
+$color_blog_hover_bg: #2f3b48;
 $color_blog_active_bg: #404040;
 $color_blog_accent: #6bf;
 $color_blog_code_bg: #2d2d2d;
@@ -95,6 +97,7 @@ $color_blog_tag_hover_border: #4a4a4a;
 $color_blog_tag_hover_text: #d0d0d0;
 $color_blog_tag_active_bg: #3b82f6;
 $color_blog_hero_bg: #252525;
+$color_htl_tab_icon: #a0a0a0;
 
 $path_to_root: '..';    // relative path from style.css to STATIC_ROOT
 

@@ -10,8 +10,10 @@
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 0.5em;
-    background: rgba($color_primary100, 0.01);
-    backdrop-filter: blur(3px);
+    border: 1px solid $color_primary25;
+    background: $color_blog_card_bg;
+    border-radius: $widget_border_radius;
+    overflow: hidden;
 
     &.striped tr:nth-child(2n) {
         background: rgba($color_primary100, 0.03);

@@ -172,6 +172,7 @@ if (!Date.now) {
 function count_down(label) {
     var initial = parseInt(label.attr('data-secs'));
     var start = Date.now();
+    var short = label.attr('data-countdown') === 'short';
 
     function format(num) {
         var s = "0" + num;
@@ -190,7 +191,13 @@ function count_down(label) {
         var h = Math.floor(time % 86400 / 3600);
         var m = Math.floor(time % 3600 / 60);
         var s = time % 60;
-        if (d > 0)
+        if (short) {
+            var parts = [];
+            if (d > 0) parts.push(d + 'd');
+            if (h > 0 || d > 0) parts.push(format(h) + 'h');
+            if (m > 0 || d > 0 || h > 0) parts.push(format(m) + 'm');
+            label.text(parts.join(' '));
+        } else if (d > 0)
             label.text(npgettext('time format with day', '%d day %h:%m:%s', '%d days %h:%m:%s', d)
                 .replace('%d', d).replace('%h', format(h)).replace('%m', format(m)).replace('%s', format(s)));
         else
