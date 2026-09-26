@@ -439,6 +439,9 @@ class Profile(models.Model):
                                   help_text=_('The amount of Connhen (Spiders) owned by the user.'))
     display_connhen_balance = models.BooleanField(default=True, verbose_name=_('Display Connhen balance'),
                                                   help_text=_('Display Connhen balance on on navigation bar.'))
+    codeforces_handle = models.CharField(max_length=50, blank=True, default='', verbose_name=_('Codeforces handle'))
+    discord_handle = models.CharField(max_length=100, blank=True, default='', verbose_name=_('Discord handle'))
+    atcoder_handle = models.CharField(max_length=100, blank=True, default='', verbose_name=_('AtCoder handle'))
 
     @classmethod
     def get_ticket_secret(cls, profile_id):

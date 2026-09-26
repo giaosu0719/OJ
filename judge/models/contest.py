@@ -632,6 +632,20 @@ class ContestParticipation(models.Model):
     LIVE = 0
     SPECTATE = -1
 
+    DISQUALIFY_REASON_AI = 'ai'
+    DISQUALIFY_REASON_COPY = 'copy'
+    DISQUALIFY_REASON_NO_EXPLANATION = 'no_explanation'
+    DISQUALIFY_REASON_OTHER = 'other'
+    DISQUALIFY_REASON_CHOICES = (
+        (DISQUALIFY_REASON_AI, _('AI detect')),
+        (DISQUALIFY_REASON_COPY, _('Chép code')),
+        (DISQUALIFY_REASON_NO_EXPLANATION, _('Không giải thích')),
+        (DISQUALIFY_REASON_OTHER, _('Khác')),
+    )
+    # Single source of truth for the human-readable labels sent to the ranking table.
+    DISQUALIFY_REASON_LABELS = {code: str(label) for code, label in DISQUALIFY_REASON_CHOICES}
+    DISQUALIFY_REASON_CODES = [code for code, _label in DISQUALIFY_REASON_CHOICES]
+
     contest = models.ForeignKey(Contest, verbose_name=_('associated contest'), related_name='users', on_delete=CASCADE)
     user = models.ForeignKey(Profile, verbose_name=_('user'), related_name='contest_history', on_delete=CASCADE)
     real_start = models.DateTimeField(verbose_name=_('start time'), default=timezone.now, db_column='start')
@@ -643,6 +657,12 @@ class ContestParticipation(models.Model):
                                                  help_text=_('Frozen cumulative time in the scoreboard.'))
     is_disqualified = models.BooleanField(verbose_name=_('is disqualified'), default=False,
                                           help_text=_('Whether this participation is disqualified.'))
+    disqualify_reason = models.CharField(verbose_name=_('disqualification reason'), max_length=20,
+                                         choices=DISQUALIFY_REASON_CHOICES, blank=True, default='',
+                                         help_text=_('Why this participation was disqualified.'))
+    disqualify_reason_detail = models.TextField(verbose_name=_('disqualification reason detail'), blank=True,
+                                                default='',
+                                                help_text=_('Free-form detail, only used for the "Khác" reason.'))
     tiebreaker = models.FloatField(verbose_name=_('tie-breaking field'), default=0.0)
     frozen_tiebreaker = models.FloatField(verbose_name=_('frozen tie-breaking field'), default=0.0)
     virtual = models.IntegerField(verbose_name=_('virtual participation id'), default=LIVE,
@@ -691,6 +711,12 @@ class ContestParticipation(models.Model):
                 self.user.remove_contest()
             self.contest.banned_users.add(self.user)
         else:
+            # Clear the stored reason along with the flag, so an un-disqualified
+            # participation never keeps a stale reason next to it.
+            if self.disqualify_reason or self.disqualify_reason_detail:
+                self.disqualify_reason = ''
+                self.disqualify_reason_detail = ''
+                self.save(update_fields=['disqualify_reason', 'disqualify_reason_detail'])
             self.contest.banned_users.remove(self.user)
         self.check_ban()
     set_disqualified.alters_data = True

@@ -298,6 +298,43 @@ svg.rate-box {
     color: $color_primary100;
 }
 
+.atcoder-none, .atcoder-none a {
+    color: $color_atcoder_none;
+    font-weight: normal;
+}
+
+.atcoder-gray, .atcoder-gray a {
+    color: $color_atcoder_gray;
+}
+
+.atcoder-brown, .atcoder-brown a {
+    color: $color_atcoder_brown;
+}
+
+.atcoder-green, .atcoder-green a {
+    color: $color_atcoder_green;
+}
+
+.atcoder-cyan, .atcoder-cyan a {
+    color: $color_atcoder_cyan;
+}
+
+.atcoder-blue, .atcoder-blue a {
+    color: $color_atcoder_blue;
+}
+
+.atcoder-yellow, .atcoder-yellow a {
+    color: $color_atcoder_yellow;
+}
+
+.atcoder-orange, .atcoder-orange a {
+    color: $color_atcoder_orange;
+}
+
+.atcoder-red, .atcoder-red a {
+    color: $color_atcoder_red;
+}
+
 .rate-group {
     white-space: nowrap;
     display: inline-block;

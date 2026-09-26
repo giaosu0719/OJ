@@ -120,6 +120,29 @@
     height: 2.3em;
 }
 
+// Problem search widget: rounded card with a pale blue body.
+// Scoped with .sidebox.problem-search-box so it outranks the generic
+// `.sidebox` / `.sidebox h3` / `.sidebox-content` rules in widgets.scss,
+// which is imported later than this file.
+.sidebox.problem-search-box {
+    border-radius: $widget_border_radius;
+    overflow: hidden;
+    // the generic .sidebox uses `!important` here, so match it
+    padding: 0 !important;
+    background: $color_problem_search_border;
+
+    h3 {
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .sidebox-content {
+        margin: 0;
+        border: 1px solid $color_problem_search_border;
+        background: $color_problem_search_bg;
+    }
+}
+
 label[for="category"], label[for="type"] {
     padding-bottom: 0.25em;
     display: block;

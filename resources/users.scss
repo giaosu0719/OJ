@@ -195,18 +195,20 @@ span.organization {
 
 #content .tabs.user-nav-tabs {
     display: inline-flex;
-    width: fit-content;
+    max-width: 100%;
     justify-content: flex-start;
     background: $color_blog_hover_bg;
     border: none;
     border-bottom: none;
     border-radius: 12px;
     padding: 4px;
-    margin: 0 0 18px;
+    margin: 0;
 
     > ul {
         position: static;
-        gap: 0;
+        flex-wrap: wrap;
+        overflow: visible;
+        gap: 4px;
         margin: 0;
         padding: 0;
 
@@ -217,10 +219,10 @@ span.organization {
                 display: inline-block;
                 margin: 0;
                 border: none;
-                border-top-width: 0;
-                border-top: none;
+                border-top-width: 0 !important;
+                border-top-color: transparent !important;
                 border-radius: 9px;
-                padding: 7px 18px;
+                padding: 6px 12px;
                 background: transparent;
                 color: $color_blog_text_secondary;
                 font-weight: 600;
@@ -228,10 +230,29 @@ span.organization {
                 transition: background-color 0.15s ease, color 0.15s ease;
             }
 
+            &.tab-icon-only {
+                > a, > span {
+                    padding: 6px 11px;
+                }
+
+                .tab-icon {
+                    padding-right: 0;
+                }
+            }
+
+            &.tab-sep {
+                align-self: stretch;
+                width: 1px;
+                margin: 4px 6px;
+                background: $color_blog_border;
+            }
+
             &.active {
                 > a, > span {
                     background: $highlight_blue;
                     color: #fff;
+                    border-top-width: 0 !important;
+                    border-top-color: transparent !important;
 
                     &:hover, &:focus {
                         background: $highlight_blue;
@@ -251,6 +272,24 @@ span.organization {
             &.active:hover > a, &.active:hover > span {
                 color: #fff;
             }
+        }
+    }
+}
+
+#content .user-about-main > .user-nav-row {
+    margin-bottom: 0;
+}
+
+#content .user-nav-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+
+    > .tabs-rowwrapper {
+        gap: 0;
+
+        > .tabs-admin-block {
+            display: none;
         }
     }
 }
@@ -299,39 +338,324 @@ span.organization {
 }
 
 .user-info-page {
+    padding: 0 20px;
+    box-sizing: border-box;
     display: flex;
+    gap: 24px;
+    align-items: flex-start;
 }
 
 .user-sidebar {
-    width: 200px;
-    padding-left: 15px;
-    margin-right: 15px;
+    flex-shrink: 0;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 img.user-gravatar {
     display: block;
-    border-radius: 6px;
+    border-radius: 50%;
     background-color: white;
     width: 100%;
 }
 
-.user-content {
-    flex: 1 1;
-    overflow: hidden;
-    word-wrap: break-word;
+.user-card {
+    width: 100%;
+    box-sizing: border-box;
+    background: $color_blog_sidebar_bg;
+    border: 1px solid $color_blog_border;
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgb(111 161 224 / 8%), 0 4px 14px rgb(111 161 224 / 16%);
+
+    .user-card-avatar {
+        .user-gravatar-container {
+            margin: 0;
+            width: 140px;
+            height: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        img.user-gravatar {
+            width: 100%;
+            height: auto;
+        }
+    }
+
+    .user-card-identity {
+        margin-top: 16px;
+
+        .user-card-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: inherit;
+
+            &:hover, &:focus {
+                color: $color_link50;
+            }
+        }
+
+        .user-card-handle {
+            color: $color_blog_text_muted;
+            font-size: 1em;
+            margin-top: 2px;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .user-card-info {
+        margin-top: 20px;
+        border-top: 1px solid $color_blog_border;
+
+        .user-card-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 2px;
+            border-bottom: 1px solid $color_blog_border;
+            font-size: 0.92em;
+
+            .row-label {
+                color: $color_blog_text_primary;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .row-value {
+                font-weight: 600;
+                text-align: right;
+                overflow-wrap: anywhere;
+                min-width: 0;
+
+                &:not(.rating-number) {
+                    color: $color_blog_text_primary;
+                }
+
+                &.rating-number.rate-none {
+                    color: $color_blog_text_secondary;
+                    font-weight: 400;
+                }
+            }
+        }
+    }
 }
 
-@media not all and (min-width: 600px) {
+@font-face {
+    font-family: "Comic Neue";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(/static/vnoj/comicneue/ComicNeue-Regular.woff2) format("woff2");
+}
+
+@font-face {
+    font-family: "Comic Neue";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url(/static/vnoj/comicneue/ComicNeue-Bold.woff2) format("woff2");
+}
+
+.user-social-card {
+    width: 100%;
+    box-sizing: border-box;
+    background: $color_blog_card_bg;
+    border: 1px solid $color_blog_border_strong;
+    border-radius: 16px;
+    padding: 8px 18px;
+    box-shadow: 0 1px 2px rgb(111 161 224 / 8%), 0 4px 14px rgb(111 161 224 / 16%);
+
+    .user-social-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 2px;
+        border-bottom: 1px solid $color_blog_border;
+        font-size: 0.92em;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .row-label {
+            color: $color_blog_text_primary;
+            font-weight: 700;
+        }
+
+        a.row-value {
+            font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+            font-weight: 700;
+            text-decoration: none;
+            overflow-wrap: anywhere;
+
+            &:not([class*="rate-"]):not([class*="atcoder-"]) {
+                color: $color_link50;
+            }
+
+            &:hover, &:focus {
+                text-decoration: underline;
+            }
+        }
+
+        .row-value {
+            overflow-wrap: anywhere;
+
+            &:not([class*="rate-"]):not([class*="atcoder-"]) {
+                color: $color_blog_text_primary;
+            }
+        }
+    }
+}
+
+@media (max-width: 700px) {
     .user-info-page {
         display: block;
     }
 
     .user-sidebar {
-        margin: 0 auto;
+        width: 100%;
     }
 
-    .user-content {
-        overflow: visible;
+    .user-card {
+        width: 100%;
+
+        .user-card-avatar {
+            .user-gravatar-container {
+                width: 120px;
+            }
+        }
+    }
+}
+
+.user-content {
+    flex: 1 1;
+    min-width: 0;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+.user-about-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+
+    .user-card-badges {
+        flex-shrink: 0;
+        width: 320px;
+        box-sizing: border-box;
+        background: $color_blog_card_bg;
+        border: 1px solid $color_blog_border;
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 1px 2px rgb(111 161 224 / 8%), 0 4px 14px rgb(111 161 224 / 16%);
+
+        h4 {
+            margin: 0 0 12px;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 1.05em;
+            font-weight: 700;
+            color: $color_blog_text_primary;
+        }
+
+        .ucb-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            gap: 16px 0;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .ucb-item {
+            flex: 0 0 30%;
+            text-align: center;
+
+            img {
+                display: block;
+                width: 100%;
+                height: 56px;
+                object-fit: contain;
+                margin: 0 auto;
+                user-select: none;
+                -webkit-user-drag: none;
+            }
+
+            .ucb-name {
+                display: block;
+                margin-top: 4px;
+                font-size: 0.64em;
+                line-height: 1.25;
+                font-weight: 600;
+                color: $color_blog_text_secondary;
+                overflow-wrap: anywhere;
+            }
+        }
+
+        .ucb-empty {
+            flex: 0 0 100%;
+            color: $color_blog_text_muted;
+            font-size: 0.9em;
+        }
+    }
+}
+
+.user-about-main {
+    flex: 1 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+#content .user-about-layout .user-about-main > .content-description {
+    background: $color_blog_sidebar_bg;
+    border: 2px solid $color_blog_border_stronger;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding: 20px 24px;
+    box-shadow: 0 2px 4px rgb(111 161 224 / 12%), 0 6px 18px rgb(111 161 224 / 22%);
+
+    .about-self-description {
+        background: $color_blog_card_bg;
+        border: 1px solid $color_blog_border;
+        border-radius: 12px;
+        box-sizing: border-box;
+        padding: 14px 16px;
+    }
+}
+
+#content .user-about-layout .user-about-main > .rating-history-card {
+    background: $color_blog_card_bg;
+    border: 1px solid $color_blog_border;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding: 20px 24px;
+    box-shadow: 0 1px 2px rgb(111 161 224 / 8%), 0 4px 14px rgb(111 161 224 / 16%);
+
+    h4 {
+        margin: 0;
+        font-size: 1.05em;
+        font-weight: 700;
+        color: $color_blog_text_primary;
+    }
+}
+
+@media (max-width: 1200px) {
+    .user-about-layout {
+        display: block;
+
+        .user-card-badges {
+            width: 100%;
+            margin-top: 24px;
+        }
     }
 }
 

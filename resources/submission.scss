@@ -1,5 +1,16 @@
 @use "vars" as *;
 
+#content-right.submission .sidebox {
+    background: $color_blog_card_bg;
+    border: 1px solid $color_blog_border;
+    border-radius: $widget_border_radius;
+    box-sizing: border-box;
+
+    .sidebox-content {
+        border: none;
+    }
+}
+
 .info-float {
     position: sticky;
     top: 60px;
@@ -7,7 +18,11 @@
 }
 
 #submissions-table {
-    background: rgba($color_primary100, .01);
+    background: $color_blog_card_bg;
+    border: 1px solid $color_blog_border;
+    border-radius: 12px;
+    box-sizing: border-box;
+    padding: 10px 12px;
 }
 
 .submissions-status-table {

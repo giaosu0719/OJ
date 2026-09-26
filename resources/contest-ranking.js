@@ -516,7 +516,20 @@
             html += '<td class="rating-column">' + ratingHtml(p.rating) + '</td>';
         }
 
+        // Old single-row return. The disqualification reason callout (a sibling
+        // <tr> with an arrow pointing back at this row) is now appended below.
+        // html += '</tr>';
+        // return html;
         html += '</tr>';
+
+        if (p.is_disqualified && typeof window.buildDisqualifyNoteRow === 'function') {
+            // Same column arithmetic as buildTotalACRow(): the "Total AC" label
+            // colspan, one cell per problem, plus the optional rating column.
+            var totalColspan = renderer.colspanTotalAC + problems.length +
+                (contest.has_rating ? 1 : 0);
+            html += window.buildDisqualifyNoteRow(p, totalColspan);
+        }
+
         return html;
     }
 

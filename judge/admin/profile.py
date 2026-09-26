@@ -86,6 +86,7 @@ class ProfileAdmin(NoBatchDeleteMixin, VersionAdmin):
               'active_nameplate', 'banners', 'active_banner', 'avatar_frames', 'active_avatar_frame', 'about',
               'organizations', 'vnoj_points', 'rating', 'contribution_points', 'timezone',
               'language', 'ace_theme', 'math_engine', 'last_access', 'ip', 'mute', 'is_unlisted', 'allow_tagging',
+              'codeforces_handle', 'discord_handle', 'atcoder_handle',
               'notes', 'username_display_override', 'ban_reason', 'ban_expires_at', 'is_totp_enabled', 'ip_auth',
               'user_script', 'current_contest')
     readonly_fields = ('user', 'display_rank')

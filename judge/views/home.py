@@ -113,7 +113,7 @@ class HomeView(TitledTemplateView):
         now = timezone.now()
 
         posts = (BlogPost.objects.filter(visible=True, publish_on__lte=now,
-                                         organization=None)
+                                         organization=None, global_post=True)
                                  .order_by('-sticky', '-publish_on')
                                  .prefetch_related('authors__user', 'authors__display_badge')
                                  [:8])

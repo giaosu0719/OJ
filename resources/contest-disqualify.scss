@@ -1,0 +1,137 @@
+// Disqualification reason callouts and the reason-picker dialog.
+//
+// Styled independently of contest.scss so the ranking table's existing
+// `.disqualified` row highlighting is left untouched. This file is @used after
+// widgets.scss in style.scss, so the plain class selectors below already win
+// over the generic table rules.
+
+@use "vars" as *;
+
+$disqualify-note-radius: 10px;
+$disqualify-note-arrow-size: 9px;
+$disqualify-note-arrow-offset: 30px;
+
+// ─── Callout row under a disqualified participant ─────────────────────────────
+
+#ranking-table {
+    .disqualify-note-row {
+        > td {
+            padding: 0 4px 6px;
+            background: $color_contest_ranking_disqualified;
+            border: none;
+            vertical-align: top;
+        }
+    }
+
+    .disqualify-note {
+        position: relative;
+        padding: 7px 12px;
+        background: $color_primary36;
+        border: 1px solid $color_primary25;
+        border-radius: $disqualify-note-radius;
+        text-align: left;
+        font-weight: normal;
+    }
+
+    .disqualify-note-arrow {
+        position: absolute;
+        top: -#{$disqualify-note-arrow-size - 1}px;
+        left: $disqualify-note-arrow-offset;
+        width: 0;
+        height: 0;
+        border-left: $disqualify-note-arrow-size solid transparent;
+        border-right: $disqualify-note-arrow-size solid transparent;
+        border-bottom: $disqualify-note-arrow-size solid $color_primary25;
+    }
+
+    .disqualify-note-label {
+        font-weight: 600;
+    }
+
+    .disqualify-note-value {
+        font-weight: 600;
+    }
+
+    .disqualify-note-detail {
+        margin-top: 4px;
+        color: $color_primary50;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+// ─── Reason picker dialog ─────────────────────────────────────────────────────
+
+.disqualify-dialog {
+    text-align: left;
+
+    h3 {
+        margin-bottom: 0.4em;
+    }
+}
+
+.disqualify-dialog-hint {
+    margin-bottom: 0.8em;
+    color: $color_primary50;
+}
+
+.disqualify-reason-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.disqualify-reason-choice {
+    display: block;
+    margin: 0;
+    padding: 6px 10px;
+    border: 1px solid $color_primary25;
+    border-radius: $disqualify-note-radius;
+    cursor: pointer;
+    font-weight: normal;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+
+    &:hover {
+        border-color: rgba(82, 168, 236, 0.8);
+    }
+
+    input {
+        margin-right: 0.4em;
+    }
+}
+
+.disqualify-reason-other {
+    margin-top: 8px;
+
+    textarea {
+        display: block;
+        width: 100%;
+        margin-top: 4px;
+        padding: 6px 8px;
+        box-sizing: border-box;
+        color: $color_primary75;
+        background: $color_primary36;
+        border: 1px solid $color_primary25;
+        border-radius: $disqualify-note-radius;
+        font-size: $base_font_size;
+    }
+}
+
+.disqualify-dialog-error {
+    margin-top: 10px;
+    padding: 6px 10px;
+    background: $color_danger25;
+    color: $color_danger100;
+    border: 1px solid $color_danger50;
+    border-radius: $disqualify-note-radius;
+}
+
+.disqualify-dialog-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+
+    .button {
+        margin: 0;
+    }
+}

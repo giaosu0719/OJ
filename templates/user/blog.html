@@ -28,14 +28,12 @@
     </style>
 {% endblock %}
 
-{% block title_row %}
-    {% set tab = 'blogs' %}
-    {% include "user/user-tabs.html" %}
-{% endblock %}
+{% block title_row %}{% endblock %}
 
 {% block title_ruler %}{% endblock %}
 
 {% block body %}
+    <div class="user-nav-row">{% with tab='blogs', left_align_tabs=True %}{% include "user/user-tabs.html" %}{% endwith %}</div>
     {% block before_posts %}{% endblock %}
     <div id="blog-container">
         <div class="blog-content sidebox">

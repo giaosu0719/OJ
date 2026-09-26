@@ -42,6 +42,16 @@ $color_rating_candidate_master: #aa00aa;
 $color_rating_master: #ff8c00;
 $color_rating_grandmaster: #ff0000;
 
+$color_atcoder_none: #999;
+$color_atcoder_gray: #808080;
+$color_atcoder_brown: #804000;
+$color_atcoder_green: #008000;
+$color_atcoder_cyan: #00c0c0;
+$color_atcoder_blue: #0000ff;
+$color_atcoder_yellow: #c0c000;
+$color_atcoder_orange: #ff8000;
+$color_atcoder_red: #ff0000;
+
 $color_select2_search_dropdown: $color_primary0;
 
 $color_user_submission_activity0: #ddd;
@@ -76,11 +86,17 @@ $color_problem_tab_active_bg: #fff;
 $color_problem_tab_active_text: #007bff;
 $color_problem_submit_bg: #f9f9f9;
 
+// Problem search widget (rounded card, blue frame)
+$color_problem_search_bg: #f7fbff;
+$color_problem_search_border: #bcd9f2;
+
 // Blog-specific light mode colors
 $color_blog_bg: #ffffff;
 $color_blog_card_bg: #f7fbff;
 $color_blog_sidebar_bg: #eef6fe;
 $color_blog_border: #d4e3f4;
+$color_blog_border_strong: #b9d4f0;
+$color_blog_border_stronger: #9cc3ea;
 $color_blog_text_primary: #20304a;
 $color_blog_text_secondary: #565869;
 $color_blog_text_muted: #8e8ea0;

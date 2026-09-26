@@ -61,6 +61,7 @@
 {% block users_js_media %}
     {% compress js %}
         <script type="text/javascript" src="{{ static('contest-ranking.js') }}"></script>
+        <script type="text/javascript" src="{{ static('contest-disqualify.js') }}"></script>
         <script type="text/javascript" src="{{ static('contest-replay.js') }}"></script>
         <script type="text/javascript" src="{{ static('contest-ranking-animate.js') }}"></script>
     {% endcompress %}
@@ -330,7 +331,7 @@ $('#show-personal-info-checkbox').click(function () {
                 $('#org-check-list').val(selected_orgs).trigger('change');
             };
 
-            function submitDisqualifyForm($a) {
+            function submitDisqualifyForm($a, extraFields) {
                 var form = document.createElement('form');
                 form.method = 'post';
                 form.action = $a.data('action-url');
@@ -345,21 +346,41 @@ $('#show-personal-info-checkbox').click(function () {
                 pid.name = 'participation';
                 pid.value = $a.data('participation-id');
                 form.appendChild(pid);
+                // Optional extra POST fields, e.g. {disqualify_action: 'undisqualify'}.
+                // Old callers pass nothing and behave exactly as before.
+                if (extraFields) {
+                    for (var key in extraFields) {
+                        if (!Object.prototype.hasOwnProperty.call(extraFields, key)) continue;
+                        var extra = document.createElement('input');
+                        extra.type = 'hidden';
+                        extra.name = key;
+                        extra.value = extraFields[key];
+                        form.appendChild(extra);
+                    }
+                }
                 document.body.appendChild(form);
                 form.submit();
             }
 
             window.enableAdminOperations = function () {
-                $('a.disqualify-participation').click(function (e) {
-                    e.preventDefault();
-                    if (e.ctrlKey || e.metaKey || confirm({{ _('Are you sure you want to disqualify this participation?')|htmltojs }}))
-                        submitDisqualifyForm($(this));
-                });
+                // Old disqualify flow: a bare confirm() then a toggle.
+                // Replaced by the reason picker in contest-disqualify.js, which
+                // needs to know the reason before it can submit.
+                // $('a.disqualify-participation').click(function (e) {
+                //     e.preventDefault();
+                //     if (e.ctrlKey || e.metaKey || confirm({{ _('Are you sure you want to disqualify this participation?')|htmltojs }}))
+                //         submitDisqualifyForm($(this));
+                // });
+
                 $('a.un-disqualify-participation').click(function (e) {
                     e.preventDefault();
                     if (e.ctrlKey || e.metaKey || confirm({{ _('Are you sure you want to un-disqualify this participation?')|htmltojs }}))
-                        submitDisqualifyForm($(this));
+                        submitDisqualifyForm($(this), {disqualify_action: 'undisqualify'});
                 });
+
+                if (typeof window.enableDisqualifyOperations === 'function') {
+                    window.enableDisqualifyOperations();
+                }
             };
 
             window.onFinishRankingRender = function (isNewDataFromBackend = false) {

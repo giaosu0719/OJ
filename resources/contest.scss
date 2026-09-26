@@ -1,5 +1,11 @@
 @use "vars" as *;
 
+.contest-detail {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #contest-calendar {
     border-collapse: collapse;
     width: 100%;

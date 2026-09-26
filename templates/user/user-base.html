@@ -11,57 +11,53 @@
 {% block body %}
     <div class="user-info-page">
         <div class="user-sidebar">
-            <div class="user-gravatar-container {{ user.avatar_frame_css_class_name }}">
-                <img src="{{ gravatar(user, 135) }}" class="user-gravatar">
-            </div>
-            <br>
-            {% if user.user == request.user or request.user.is_superuser %}
-                <div>
-                    <b class="semibold">{{ _('Email:') }}</b>
-                    <span style="word-wrap: break-word;">{{ user.user.email }}</span>
+            <aside class="user-card">
+                <div class="user-card-avatar">
+                    <div class="user-gravatar-container {{ user.avatar_frame_css_class_name }}">
+                        <img src="{{ gravatar(user, 160) }}" class="user-gravatar" alt="{{ user.display_name }}">
+                    </div>
                 </div>
-            {% endif %}
-            <div><b>
-                    {{ _('Problems solved:') }} {{ user.problem_count }}
-            </b></div>
-
-            {% if not user.is_unlisted %}
-                <div><b class="semibold">{{ _('Rank by points:') }}</b> #{{ rank }}</div>
-            {% endif %}
-            <div>
-                <b class="semibold">{{ _('Total points:') }}</b>
-                <span title="{{ user.performance_points|floatformat(2) }}">
-                    {{ user.performance_points|floatformat(2) }}
-                </span>
-            </div>
-            <div>
-                <b class="semibold">{{ _('Contribution points:') }}</b>
-                <span title="{{ user.contribution_points }}">
-                    {{ user.contribution_points }}
-                </span>
-            </div>
-
-            <br>
-            <div>
-                <a href="{{ url('all_user_submissions', user.user.username) }}">{{ _('View submissions') }}</a>
-            </div>
-
-            {% if ratings %}
-                <br>
-                <div><b>
-                    {%- trans trimmed counter=ratings|length %}
-                        {{ counter }} contest written
-                    {% pluralize %}
-                        {{ counter }} contests written
-                    {% endtrans -%}
-                </b></div>
-                {% if not user.is_unlisted %}
-                    <div><b class="semibold">{{ _('Rank by rating:') }}</b> #{{ rating_rank }}</div>
-                {% endif %}
-                <div><b class="semibold">{{ _('Rating:') }}</b> {{ rating_number(rating) }}</div>
-                <div><b class="semibold">{{ _('Min. rating:') }}</b> {{ rating_number(min_rating) }}</div>
-                <div><b class="semibold">{{ _('Max rating:') }}</b> {{ rating_number(max_rating) }}</div>
-            {% endif %}
+                <div class="user-card-identity">
+                    <span class="rating {{ user.rating_css_class_name }}">
+                        <a href="{{ user.get_absolute_url() }}" class="user-card-name">{{ user.display_name }}</a>
+                    </span>
+                    <div class="user-card-handle">@{{ user.username }}</div>
+                </div>
+                <div class="user-card-info">
+                    <div class="user-card-info-row">
+                        <span class="row-label">{{ _('Rating') }}</span>
+                        <span class="row-value rating-number {{ user.rating_css_class_name }}">
+                            {%- if user.rating is not none %}{{ user.rating }}{% else %}{{ _('Unrated') }}{% endif -%}
+                        </span>
+                    </div>
+                    <div class="user-card-info-row">
+                        <span class="row-label">{{ _('TBC Elo') }}</span>
+                        <span class="row-value">{{ _('Unrated') }}</span>
+                    </div>
+                    <div class="user-card-info-row">
+                        <span class="row-label">{{ _('Discord') }}</span>
+                        <span class="row-value">{{ user.discord_handle or '—' }}</span>
+                    </div>
+                </div>
+            </aside>
+            <aside class="user-social-card">
+                <div class="user-social-row">
+                    <span class="row-label">{{ _('Codeforces') }}</span>
+                    {% if user.codeforces_handle %}
+                        <a class="row-value {{ cf_rating_class(user.codeforces_handle) }}" href="https://codeforces.com/profile/{{ user.codeforces_handle|urlencode }}" target="_blank" rel="noopener">{{ user.codeforces_handle }}</a>
+                    {% else %}
+                        <span class="row-value">—</span>
+                    {% endif %}
+                </div>
+                <div class="user-social-row">
+                    <span class="row-label">{{ _('AtCoder') }}</span>
+                    {% if user.atcoder_handle %}
+                        <a class="row-value {{ ac_rating_class(user.atcoder_handle) }}" href="https://atcoder.jp/users/{{ user.atcoder_handle|urlencode }}" target="_blank" rel="noopener">{{ user.atcoder_handle }}</a>
+                    {% else %}
+                        <span class="row-value">—</span>
+                    {% endif %}
+                </div>
+            </aside>
         </div>
         <div class="user-content">{% block user_content %}{% endblock %}</div>
     </div>

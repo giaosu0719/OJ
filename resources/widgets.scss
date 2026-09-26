@@ -360,6 +360,13 @@ ul.pagination {
     margin-top: 10px;
 }
 
+#content-body .top-pagination-bar,
+#content-body .bottom-pagination-bar {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .alert {
     padding: 15px;
     margin-bottom: 20px;

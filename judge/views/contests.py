@@ -8,6 +8,7 @@ from operator import attrgetter, itemgetter
 
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.context_processors import PermWrapper
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.cache import cache
@@ -901,6 +902,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
     ).values(
         'id', 'score', 'frozen_score', 'cumtime', 'frozen_cumtime',
         'tiebreaker', 'frozen_tiebreaker', 'is_disqualified', 'virtual',
+        'disqualify_reason', 'disqualify_reason_detail',
         'format_data',
         'user_id', 'user__display_rank', 'user__rating',
         'user__username_display_override',
@@ -909,6 +911,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name', '_email',
     )
 
+    reason_labels = ContestParticipation.DISQUALIFY_REASON_LABELS
     participations_data = []
     for row in queryset:
         participations_data.append({
@@ -917,6 +920,9 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
             'cumtime': float(row['frozen_cumtime'] if frozen else row['cumtime']),
             'tiebreaker': float(row['frozen_tiebreaker'] if frozen else row['tiebreaker']),
             'is_disqualified': row['is_disqualified'],
+            'disqualify_reason': row['disqualify_reason'],
+            'disqualify_reason_detail': row['disqualify_reason_detail'],
+            'disqualify_reason_label': reason_labels.get(row['disqualify_reason'] or '', ''),
             'virtual': row['virtual'],
             'rating': row['rating__rating'],
             'user': _serialize_user(row, _user_url_tpl, _org_url_tpl),
@@ -989,6 +995,14 @@ class ContestRankingBase(ContestMixin, LoginRequiredMixin, TitleMixin, DetailVie
                     'judge.change_contestparticipation',
                 ),
                 'disqualify_url': reverse('contest_participation_disqualify', args=[contest.key]),
+                # DISQUALIFY_REASON_LABELS, not DISQUALIFY_REASON_CHOICES: the
+                # choice labels are lazy translation proxies and json.dumps
+                # cannot serialise them.
+                'disqualify_reasons': [
+                    {'value': code, 'label': label}
+                    for code, label in ContestParticipation.DISQUALIFY_REASON_LABELS.items()
+                ],
+                'disqualify_other_code': ContestParticipation.DISQUALIFY_REASON_OTHER,
             } if self.can_edit else {}),
             'points_precision': contest.points_precision,
             'run_pretests_only': contest.run_pretests_only,
@@ -1117,6 +1131,10 @@ class ContestRanking(ContestRankingBase):
                 'id': virtual_part.id,
                 'real_start': int(virtual_part.real_start.timestamp()),
                 'is_disqualified': virtual_part.is_disqualified,
+                'disqualify_reason': virtual_part.disqualify_reason,
+                'disqualify_reason_detail': virtual_part.disqualify_reason_detail,
+                'disqualify_reason_label': ContestParticipation.DISQUALIFY_REASON_LABELS.get(
+                    virtual_part.disqualify_reason or '', ''),
                 'virtual': virtual_part.virtual,
                 'rating': profile.rating,
                 'user': {
@@ -1273,7 +1291,32 @@ class ContestParticipationDisqualify(ContestMixin, SingleObjectMixin, View):
         except ObjectDoesNotExist:
             pass
         else:
-            participation.set_disqualified(not participation.is_disqualified)
+            # Old behaviour: a bare POST with no explicit action just toggles the flag.
+            # Kept as a fallback so the pre-reason-picker UI keeps working.
+            # participation.set_disqualified(not participation.is_disqualified)
+            action = request.POST.get('disqualify_action') or ''
+
+            if action == 'undisqualify':
+                # set_disqualified(False) also wipes disqualify_reason /
+                # disqualify_reason_detail on the model.
+                participation.set_disqualified(False)
+            elif action == 'disqualify':
+                reason = request.POST.get('disqualify_reason') or ''
+                detail = (request.POST.get('disqualify_reason_detail') or '').strip()
+
+                if reason not in ContestParticipation.DISQUALIFY_REASON_CODES:
+                    messages.error(request, _('Please pick a disqualification reason.'))
+                elif reason == ContestParticipation.DISQUALIFY_REASON_OTHER and not detail:
+                    messages.error(request, _('Please spell out the reason for the "Khác" option.'))
+                else:
+                    participation.disqualify_reason = reason
+                    # Only "Khác" carries free text; presets store a clean code.
+                    participation.disqualify_reason_detail = (
+                        detail if reason == ContestParticipation.DISQUALIFY_REASON_OTHER else '')
+                    participation.save(update_fields=['disqualify_reason', 'disqualify_reason_detail'])
+                    participation.set_disqualified(True)
+            else:
+                participation.set_disqualified(not participation.is_disqualified)
         return HttpResponseRedirect(reverse('contest_ranking', args=(self.object.key,)))
 
 

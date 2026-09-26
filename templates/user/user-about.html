@@ -2,136 +2,71 @@
 
 {% block title_ruler %}{% endblock %}
 
-{% block title_row %}
-    {% set tab = 'about' %}
-    {% set title = link_user(user) %}
-    {% include "user/user-tabs.html" %}
-{% endblock %}
+{% block title_row %}{% endblock %}
 
 {% block user_content %}
-    <div class="content-description">
-        {% with orgs=user.organizations.filter(is_unlisted=False) %}
-            {% if orgs %}
-                <p style="margin-top: 0"><b>{{ _('From') }}</b>
-                    {% for org in orgs -%}
-                        <a href="{{ org.get_absolute_url() }}">{{ org.name }}</a>
-                        {%- if not loop.last %}, {% endif %}
-                    {% endfor %}
-                </p>
+    <div class="user-about-layout">
+        <div class="user-about-main">
+            <div class="user-nav-row">{% with tab='about', left_align_tabs=True %}{% include "user/user-tabs.html" %}{% endwith %}</div>
+            <div class="content-description">
+            {% if perms.judge.change_profile %}
+                {% with notes=user.notes %}
+                    {% if notes %}
+                        <b>{{ _('Admin notes:') }}</b>
+                        <pre style="margin-top: 0">{{ notes }}</pre>
+                    {% endif %}
+                {% endwith %}
             {% endif %}
-        {% endwith %}
-        {% if perms.judge.change_profile %}
-            {% with notes=user.notes %}
-                {% if notes %}
-                    <b>{{ _('Admin notes:') }}</b>
-                    <pre style="margin-top: 0">{{ notes }}</pre>
-                {% endif %}
-            {% endwith %}
-        {% endif %}
 
-        {% if user.about %}
-            <h4>{{ _('About') }}</h4>
-            {% cache 86400 'user_about' user.id MATH_ENGINE %}
-                {{ user.about|markdown('self-description', MATH_ENGINE)|reference|str|safe }}
-            {% endcache %}
-        {% else %}
-            <i>
-                {% if user.user == request.user %}
-                    {{ _('You have not shared any information.') }}
+            <div class="about-self-description">
+                {% if user.about %}
+                    <h4>{{ _('About') }}</h4>
+                    {% cache 86400 'user_about' user.id MATH_ENGINE %}
+                        {{ user.about|markdown('self-description', MATH_ENGINE)|reference|str|safe }}
+                    {% endcache %}
                 {% else %}
-                    {{ _('This user has not shared any information.') }}
+                    <i>
+                        {% if user.user == request.user %}
+                            {{ _('You have not shared any information.') }}
+                        {% else %}
+                            {{ _('This user has not shared any information.') }}
+                        {% endif %}
+                    </i>
+                    <br>
                 {% endif %}
-            </i>
-            <br>
-        {% endif %}
-
-        <h4>{{ _('Badges & Awards') }}</h4>
-        {% for badge in user.badges.all() %}
-            <div style="display: inline-block; margin-left: 1em; margin-right: 1em;">
-                <img src="{{ badge.full_size or badge.mini or '' }}" title="{{ badge.name }}" draggable="false" style="height: 10em; width: auto; display: block; margin: 0 auto;" />
-                <p style="text-align: center; font-weight: bold; text-transform: uppercase;">{{ badge.name }}</p>
-            </div>
-        {% else %}
-            <i>{{ _('This user has not earned any badges or awards.') }}</i>
-        {% endfor %}
-
-        <h4 id="submission-activity-header"></h4>
-        <div id="submission-activity" style="display: none;">
-            <div id="submission-activity-actions">
-                <a href="javascript:void(0)" id="prev-year-action">&laquo;</a>
-                &nbsp;<span id="year"></span>&nbsp;
-                <a href="javascript:void(0)" id="next-year-action">&raquo;</a>
-            </div>
-            <div id="submission-activity-display">
-                <table id="submission-activity-table">
-                    <tr id="submission-0">
-                        <th class="submission-date-col info-text">
-                            {{ _('Sun') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-1">
-                        <th class="submission-date-col info-text">
-                            {{ _('Mon') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-2">
-                        <th class="submission-date-col info-text">
-                            {{ _('Tues') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-3">
-                        <th class="submission-date-col info-text">
-                            {{ _('Wed') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-4">
-                        <th class="submission-date-col info-text">
-                            {{ _('Thurs') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-5">
-                        <th class="submission-date-col info-text">
-                            {{ _('Fri') }}
-                        </th>
-                    </tr>
-                    <tr id="submission-6">
-                        <th class="submission-date-col info-text">
-                            {{ _('Sat') }}
-                        </th>
-                    </tr>
-                </table>
-                <div class="info-bar">
-                    <span id="submission-total-count" class="info-text">
-                    </span>
-                    <table class="info-table">
-                        <tr>
-                            <th class="info-table-text info-text">{{ _('Less') }}</th>
-                            <td class="activity-0"><div></div></td>
-                            <td class="activity-1"><div></div></td>
-                            <td class="activity-2"><div></div></td>
-                            <td class="activity-3"><div></div></td>
-                            <td class="activity-4"><div></div></td>
-                            <th class="info-table-text info-text">{{ _('More') }}</th>
-                        <tr>
-                    </table>
-                </div>
             </div>
         </div>
 
-        {% if rating %}
-            <h4>{{ _('Rating history') }}</h4>
-            <div id="rating-chart">
-                <canvas></canvas>
-            </div>
-            <div id="rating-tooltip">
-                <div class="contest"></div>
-                <div class="date"></div>
-                <div class="rate-group">
-                    <span class="rate-box"><span></span></span>
-                    <span class="rating"></span>, #<span class="rank"></span>
+        {% if ratings %}
+            <div class="rating-history-card">
+                    <h4>{{ _('Rating history') }}</h4>
+                    <div id="rating-chart">
+                        <canvas></canvas>
+                    </div>
+                    <div id="rating-tooltip">
+                        <div class="contest"></div>
+                        <div class="date"></div>
+                        <div class="rate-group">
+                            <span class="rate-box"><span></span></span>
+                            <span class="rating"></span>, #<span class="rank"></span>
+                        </div>
+                    </div>
                 </div>
+            {% endif %}
+        </div>
+        <aside class="user-card-badges">
+            <h4>{{ _('Badges & Awards') }}</h4>
+            <div class="ucb-grid">
+                {% for badge in user.badges.all() %}
+                    <div class="ucb-item">
+                        <img src="{{ badge.mini or badge.full_size or '' }}" alt="{{ badge.name }}" title="{{ badge.name }}" loading="lazy" draggable="false">
+                        <span class="ucb-name">{{ badge.name }}</span>
+                    </div>
+                {% else %}
+                    <span class="ucb-empty">{{ _('This user has not earned any badges or awards.') }}</span>
+                {% endfor %}
             </div>
-        {% endif %}
+        </aside>
     </div>
 {% endblock %}
 
@@ -139,13 +74,6 @@
     {% if REQUIRE_JAX %}
         {% include "mathjax-load.html" %}
     {% endif %}
-
-    <script type="text/javascript" src="{{ static('user_profile.js') }}"></script>
-    <script type="text/javascript">
-        $(function () {
-            window.init_submission_table($, {{ submission_data }}, "{{ LANGUAGE_CODE }}");
-        });
-    </script>
 
     {% if ratings %}
         <script type="text/javascript" src="{{ static('libs/chart.js/Chart.js') }}"></script>

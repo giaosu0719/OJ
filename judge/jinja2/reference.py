@@ -157,7 +157,7 @@ def link_user(user):
         display_badge_img = f'<img src="{escape(profile.display_badge.mini)}"' \
                             f' title="{escape(profile.display_badge.name)}"' \
                             f' draggable="false"' \
-                            f' style="height: 1em; width: auto; margin-left: 0.25em;" />'
+                            f' style="height: 1em; width: auto; margin-left: 0.25em; user-select: none;" />'
     else:
         display_badge_img = ''
 

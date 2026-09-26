@@ -342,8 +342,8 @@ DMOJ_PASSWORD_RESET_LIMIT_COUNT = 10
 
 # At the bare minimum, dark and light theme CSS file locations must be declared
 DMOJ_THEME_CSS = {
-    'light': 'style.css',
-    'dark': 'dark/style.css',
+    'light': 'style.v38.css',
+    'dark': 'dark/style.v38.css',
 }
 # At the bare minimum, dark and light ace themes must be declared
 DMOJ_THEME_DEFAULT_ACE_THEME = {

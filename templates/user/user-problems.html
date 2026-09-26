@@ -27,12 +27,10 @@
 
 {% block title_ruler %}{% endblock %}
 
-{% block title_row %}
-    {% set tab = 'problems' %}
-    {% include "user/user-tabs.html" %}
-{% endblock %}
+{% block title_row %}{% endblock %}
 
 {% block user_content %}
+    <div class="user-nav-row">{% with tab='problems', left_align_tabs=True %}{% include "user/user-tabs.html" %}{% endwith %}</div>
     {% if pp_breakdown %}
         <h3 class="pp-breakdown-header">{{ _('Points breakdown') }}</h3>
         <div id="submissions-table" class="pp-table table">
