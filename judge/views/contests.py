@@ -39,6 +39,7 @@ from reversion import revisions
 
 from judge.comments import CommentedDetailView
 from judge.contest_format import ICPCContestFormat
+from judge.feature_data.api import get_disqualify_reasons, set_disqualify_reason
 from judge.forms import ContestAnnouncementForm, ContestCloneForm, ContestDownloadDataForm, ContestForm, \
     ProposeContestProblemFormSet
 from judge.jinja2.gravatar import gravatar
@@ -902,7 +903,6 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
     ).values(
         'id', 'score', 'frozen_score', 'cumtime', 'frozen_cumtime',
         'tiebreaker', 'frozen_tiebreaker', 'is_disqualified', 'virtual',
-        'disqualify_reason', 'disqualify_reason_detail',
         'format_data',
         'user_id', 'user__display_rank', 'user__rating',
         'user__username_display_override',
@@ -912,17 +912,22 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
     )
 
     reason_labels = ContestParticipation.DISQUALIFY_REASON_LABELS
+    rows = list(queryset)
+    # One read for the whole scoreboard: the reason lives in a separate
+    # database, so it cannot come out of the values() call above.
+    reasons = get_disqualify_reasons(row['id'] for row in rows)
     participations_data = []
-    for row in queryset:
+    for row in rows:
+        reason, detail = reasons.get(row['id'], ('', ''))
         participations_data.append({
             'id': row['id'],
             'score': float(row['frozen_score'] if frozen else row['score']),
             'cumtime': float(row['frozen_cumtime'] if frozen else row['cumtime']),
             'tiebreaker': float(row['frozen_tiebreaker'] if frozen else row['tiebreaker']),
             'is_disqualified': row['is_disqualified'],
-            'disqualify_reason': row['disqualify_reason'],
-            'disqualify_reason_detail': row['disqualify_reason_detail'],
-            'disqualify_reason_label': reason_labels.get(row['disqualify_reason'] or '', ''),
+            'disqualify_reason': reason,
+            'disqualify_reason_detail': detail,
+            'disqualify_reason_label': reason_labels.get(reason or '', ''),
             'virtual': row['virtual'],
             'rating': row['rating__rating'],
             'user': _serialize_user(row, _user_url_tpl, _org_url_tpl),
@@ -1124,6 +1129,7 @@ class ContestRanking(ContestRankingBase):
         profile = self.request.profile
         _user_url_tpl = reverse('user_page', args=['__USERNAME__'])
         username = profile.user.username
+        own_reason, own_detail = get_disqualify_reasons([virtual_part.id]).get(virtual_part.id, ('', ''))
         return {
             'contest': contest_data,
             'problems': problems_data,
@@ -1131,10 +1137,10 @@ class ContestRanking(ContestRankingBase):
                 'id': virtual_part.id,
                 'real_start': int(virtual_part.real_start.timestamp()),
                 'is_disqualified': virtual_part.is_disqualified,
-                'disqualify_reason': virtual_part.disqualify_reason,
-                'disqualify_reason_detail': virtual_part.disqualify_reason_detail,
+                'disqualify_reason': own_reason,
+                'disqualify_reason_detail': own_detail,
                 'disqualify_reason_label': ContestParticipation.DISQUALIFY_REASON_LABELS.get(
-                    virtual_part.disqualify_reason or '', ''),
+                    own_reason or '', ''),
                 'virtual': virtual_part.virtual,
                 'rating': profile.rating,
                 'user': {
@@ -1297,8 +1303,7 @@ class ContestParticipationDisqualify(ContestMixin, SingleObjectMixin, View):
             action = request.POST.get('disqualify_action') or ''
 
             if action == 'undisqualify':
-                # set_disqualified(False) also wipes disqualify_reason /
-                # disqualify_reason_detail on the model.
+                # set_disqualified(False) also wipes the stored reason.
                 participation.set_disqualified(False)
             elif action == 'disqualify':
                 reason = request.POST.get('disqualify_reason') or ''
@@ -1309,11 +1314,13 @@ class ContestParticipationDisqualify(ContestMixin, SingleObjectMixin, View):
                 elif reason == ContestParticipation.DISQUALIFY_REASON_OTHER and not detail:
                     messages.error(request, _('Please spell out the reason for the "Khác" option.'))
                 else:
-                    participation.disqualify_reason = reason
-                    # Only "Khác" carries free text; presets store a clean code.
-                    participation.disqualify_reason_detail = (
-                        detail if reason == ContestParticipation.DISQUALIFY_REASON_OTHER else '')
-                    participation.save(update_fields=['disqualify_reason', 'disqualify_reason_detail'])
+                    # Feature data first: it is the only write that cannot be retried
+                    # safely, and a reason without a flag is harmless.
+                    set_disqualify_reason(
+                        participation, reason,
+                        # Only "Khác" carries free text; presets store a clean code.
+                        detail if reason == ContestParticipation.DISQUALIFY_REASON_OTHER else '',
+                    )
                     participation.set_disqualified(True)
             else:
                 participation.set_disqualified(not participation.is_disqualified)

@@ -54,11 +54,20 @@ class ProfileForm(ModelForm):
         newsletter = forms.BooleanField(label=_('Subscribe to contest updates'), initial=False, required=False)
     test_site = forms.BooleanField(label=_('Enable experimental features'), initial=False, required=False)
 
+    # These live in the feature-data file, not on Profile, so they are plain form
+    # fields rather than model fields. The view seeds them from the store and
+    # writes them back after the profile itself saves.
+    codeforces_handle = forms.CharField(label=_('Codeforces handle'), max_length=50, required=False,
+                                        widget=forms.TextInput(attrs={'maxlength': '50'}))
+    discord_handle = forms.CharField(label=_('Discord handle'), max_length=100, required=False,
+                                     widget=forms.TextInput(attrs={'maxlength': '100'}))
+    atcoder_handle = forms.CharField(label=_('AtCoder handle'), max_length=100, required=False,
+                                     widget=forms.TextInput(attrs={'maxlength': '100'}))
+
     class Meta:
         model = Profile
         fields = ['about', 'display_badge', 'organizations', 'timezone', 'language', 'ace_theme',
-                  'site_theme', 'user_script', 'display_connhen_balance', 'codeforces_handle', 'discord_handle',
-                  'atcoder_handle']
+                  'site_theme', 'user_script', 'display_connhen_balance']
         widgets = {
             'display_badge': Select2Widget(attrs={'style': 'width:200px'}),
             'timezone': Select2Widget(attrs={'style': 'width:200px'}),

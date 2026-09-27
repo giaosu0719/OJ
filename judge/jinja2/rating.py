@@ -38,6 +38,20 @@ def get_ac_rating_class(handle):
     return get_atcoder_class(handle)
 
 
+@registry.function(name='social_handles')
+def get_social_handles(user):
+    """External handles for a profile, read from the feature-data file.
+
+    Returns a dict with 'codeforces', 'discord' and 'atcoder' keys so the
+    template can use one lookup instead of three model attributes that no
+    longer exist on Profile.
+    """
+    if user is None:
+        return {'codeforces': '', 'discord': '', 'atcoder': ''}
+    from judge.feature_data.api import get_social_handle
+    return get_social_handle(user.id)
+
+
 @registry.function
 @registry.render_with('user/rating.html')
 def rating_number(obj):

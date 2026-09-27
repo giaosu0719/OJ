@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('judge', '0214_alter_contest_authors_alter_contest_curators_and_more'),
         ('judge', '0237_avatarframe_profile_active_avatar_frame_and_more'),
+        ('judge', '0231_contest_replay_version'),
     ]
 
     operations = [

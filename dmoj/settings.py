@@ -760,6 +760,12 @@ STATIC_UPLOAD_MEDIA_DIR = 'static-upload'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# Feature data: disqualification reasons and the three social handles, which
+# used to be columns on the contest participation / profile tables. They live in
+# a plain JSON file so that keeping them out of the main database requires no
+# schema migration. The file is created on first write; see docs/FEATURE_DATA.md.
+FEATURE_DATA_PATH = os.path.join(BASE_DIR, 'feature_data.json')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

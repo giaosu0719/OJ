@@ -657,12 +657,6 @@ class ContestParticipation(models.Model):
                                                  help_text=_('Frozen cumulative time in the scoreboard.'))
     is_disqualified = models.BooleanField(verbose_name=_('is disqualified'), default=False,
                                           help_text=_('Whether this participation is disqualified.'))
-    disqualify_reason = models.CharField(verbose_name=_('disqualification reason'), max_length=20,
-                                         choices=DISQUALIFY_REASON_CHOICES, blank=True, default='',
-                                         help_text=_('Why this participation was disqualified.'))
-    disqualify_reason_detail = models.TextField(verbose_name=_('disqualification reason detail'), blank=True,
-                                                default='',
-                                                help_text=_('Free-form detail, only used for the "Khác" reason.'))
     tiebreaker = models.FloatField(verbose_name=_('tie-breaking field'), default=0.0)
     frozen_tiebreaker = models.FloatField(verbose_name=_('frozen tie-breaking field'), default=0.0)
     virtual = models.IntegerField(verbose_name=_('virtual participation id'), default=LIVE,
@@ -712,11 +706,10 @@ class ContestParticipation(models.Model):
             self.contest.banned_users.add(self.user)
         else:
             # Clear the stored reason along with the flag, so an un-disqualified
-            # participation never keeps a stale reason next to it.
-            if self.disqualify_reason or self.disqualify_reason_detail:
-                self.disqualify_reason = ''
-                self.disqualify_reason_detail = ''
-                self.save(update_fields=['disqualify_reason', 'disqualify_reason_detail'])
+            # participation never keeps a stale reason next to it. The reason
+            # lives in the feature-data file, not on this row.
+            from judge.feature_data.api import clear_disqualify_reason
+            clear_disqualify_reason(self)
             self.contest.banned_users.remove(self.user)
         self.check_ban()
     set_disqualified.alters_data = True
