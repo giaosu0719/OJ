@@ -38,7 +38,7 @@ class DjangoHandler(ZlibPacketHandler):
     def on_submission(self, data):
         id = data['submission-id']
         problem = data['problem-id']
-        storage = data.get('storage')
+        storage = data['storage']
         language = data['language']
         source = data['source']
         judge_id = data['judge-id']

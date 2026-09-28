@@ -545,6 +545,11 @@ ul.problem-list {
     border: 1px solid $color_problem_tab_border;
 }
 
+#pdfContainer {
+    height: 1000px;
+    width: 100%;
+}
+
 .sidebox-content.top-pad {
     padding-top: 12px;
 }
