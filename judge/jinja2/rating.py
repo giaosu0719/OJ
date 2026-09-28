@@ -1,5 +1,5 @@
 from judge.ratings import rating_class, rating_name, rating_progress
-from judge.utils.external_rating import get_codeforces_class, get_atcoder_class
+from judge.utils.external_rating import get_atcoder_class, get_codeforces_class
 from . import registry
 
 

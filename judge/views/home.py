@@ -41,8 +41,9 @@ def get_top_tbc_users():
 def get_user_champ_count(profile):
     pattern = r'^TBC[0-9]'
     contest_ids = list(
-        Contest.objects.filter(Q(name__regex=pattern) | Q(key__regex=pattern))
-                       .values_list('id', flat=True)
+        Contest.objects.filter(Q(name__regex=pattern) | Q(key__regex=pattern)).values_list(
+            'id', flat=True,
+        ),
     )
     if not contest_ids:
         return 0
@@ -112,11 +113,10 @@ class HomeView(TitledTemplateView):
 
         now = timezone.now()
 
-        posts = (BlogPost.objects.filter(visible=True, publish_on__lte=now,
-                                         organization=None, global_post=True)
-                                 .order_by('-sticky', '-publish_on')
-                                 .prefetch_related('authors__user', 'authors__display_badge')
-                                 [:8])
+        posts = (BlogPost.objects.filter(
+            visible=True, publish_on__lte=now, organization=None, global_post=True,
+        ).order_by('-sticky', '-publish_on')
+            .prefetch_related('authors__user', 'authors__display_badge')[:8])
         context['posts'] = posts
         context['post_comment_counts'] = {
             int(page[2:]): count for page, count in

@@ -5,12 +5,11 @@ import shutil
 import tempfile
 import threading
 
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from judge.feature_data import api
 from judge.feature_data.api import FeatureDataError
-from django.contrib.auth.models import User
-
 from judge.models import Contest, ContestParticipation, Profile
 
 
@@ -259,7 +258,11 @@ class ConcurrencyTest(FeatureDataTestCase):
 class IntegrationTest(FeatureDataTestCase):
     def test_scoreboard_row_carries_the_reason_and_label(self):
         from judge.views.contests import make_contest_ranking_json
-        contest = Contest.objects.create(key='sc', name='c', start_time=datetime.datetime(2026, 1, 1), end_time=datetime.datetime(2026, 1, 2))
+        contest = Contest.objects.create(
+            key='sc', name='c',
+            start_time=datetime.datetime(2026, 1, 1),
+            end_time=datetime.datetime(2026, 1, 2),
+        )
         user = User.objects.create(username='dq')
         profile = Profile.objects.get_or_create(user=user)[0]
         participation = ContestParticipation.objects.create(contest=contest, user=profile)

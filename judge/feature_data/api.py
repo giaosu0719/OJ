@@ -86,8 +86,8 @@ def _locked(exclusive):
             # by root, and flock needs an open-for-write descriptor from whoever
             # comes next. Keep it group/other writable.
             os.chmod(lock_path, 0o666)
-        except OSError as e:  # pragma: no cover - e.g. foreign filesystem
-            logger.debug('cannot relax permissions on %s: %s', lock_path, e)
+        except OSError:  # pragma: no cover - e.g. foreign filesystem
+            logger.debug('cannot relax permissions on %s', lock_path, exc_info=True)
         fcntl.flock(handle, fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH)
         yield
     finally:
@@ -106,11 +106,11 @@ def _read():
             data = json.load(f)
     except FileNotFoundError:
         return _empty()
-    except (OSError, ValueError) as e:
+    except (OSError, ValueError):
         # Includes json.JSONDecodeError, which is a ValueError.
         logger.warning(
             'Feature-data file %s is unreadable (%s); treating it as empty. '
-            'Fix or restore the file before writing.', path, e)
+            'Fix or restore the file before writing.', path, exc_info=True)
         return _empty()
 
     if not isinstance(data, dict):

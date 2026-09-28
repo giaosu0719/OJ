@@ -1,10 +1,12 @@
 import requests
-from django.core.cache import cache
 from django.conf import settings
+from django.core.cache import cache
+
 from judge.ratings import rating_class
 
 _TIMEOUT = getattr(settings, 'OJ_REQUESTS_TIMEOUT', 10)
 CACHE_DURATION = 3600 * 6  # 6 hours
+
 
 def get_codeforces_rating(handle):
     if not handle:
@@ -25,10 +27,11 @@ def get_codeforces_rating(handle):
                 return rating
     except Exception:
         pass
-    
+
     # Cache -1 for failure to avoid spamming
     cache.set(cache_key, -1, 300)
     return None
+
 
 def get_atcoder_rating(handle):
     if not handle:
@@ -55,22 +58,31 @@ def get_atcoder_rating(handle):
     cache.set(cache_key, -1, 300)
     return None
 
+
 def get_codeforces_class(handle):
     rating = get_codeforces_rating(handle)
     if rating is None:
         return 'rate-none'
     return rating_class(rating)
 
+
 def get_atcoder_class(handle):
     rating = get_atcoder_rating(handle)
     if rating is None:
         return 'atcoder-none'
-    
-    if rating < 400: return 'atcoder-gray'
-    if rating < 800: return 'atcoder-brown'
-    if rating < 1200: return 'atcoder-green'
-    if rating < 1600: return 'atcoder-cyan'
-    if rating < 2000: return 'atcoder-blue'
-    if rating < 2400: return 'atcoder-yellow'
-    if rating < 2800: return 'atcoder-orange'
+
+    if rating < 400:
+        return 'atcoder-gray'
+    if rating < 800:
+        return 'atcoder-brown'
+    if rating < 1200:
+        return 'atcoder-green'
+    if rating < 1600:
+        return 'atcoder-cyan'
+    if rating < 2000:
+        return 'atcoder-blue'
+    if rating < 2400:
+        return 'atcoder-yellow'
+    if rating < 2800:
+        return 'atcoder-orange'
     return 'atcoder-red'
