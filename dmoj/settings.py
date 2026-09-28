@@ -345,8 +345,8 @@ DMOJ_PASSWORD_RESET_LIMIT_COUNT = 10
 
 # At the bare minimum, dark and light theme CSS file locations must be declared
 DMOJ_THEME_CSS = {
-    'light': 'style.css',
-    'dark': 'dark/style.css',
+    'light': 'style.v41.css',
+    'dark': 'dark/style.v41.css',
 }
 # At the bare minimum, dark and light ace themes must be declared
 DMOJ_THEME_DEFAULT_ACE_THEME = {
@@ -762,6 +762,12 @@ STATIC_UPLOAD_MEDIA_DIR = 'static-upload'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+# Feature data: disqualification reasons and the three social handles, which
+# used to be columns on the contest participation / profile tables. They live in
+# a plain JSON file so that keeping them out of the main database requires no
+# schema migration. The file is created on first write; see docs/FEATURE_DATA.md.
+FEATURE_DATA_PATH = os.path.join(BASE_DIR, 'feature_data.json')
 
 DATABASES = {
     'default': {

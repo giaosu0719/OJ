@@ -8,15 +8,98 @@
     <link rel="alternate" type="application/rss+xml" href="{{ url('blog_rss') }}" title="RSS Blog Feed">
     <link rel="alternate" type="application/atom+xml" href="{{ url('comment_atom') }}" title="Atom Comment Feed">
     <link rel="alternate" type="application/rss+xml" href="{{ url('comment_rss') }}" title="RSS Comment Feed">
+    {% compress css %}
+        {{ select_css_theme('home.css', 'dark/home.css') }}
+    {% endcompress %}
 {% endblock %}   
 {% block js_media %}
     {% include "blog/media-js.html" %}
 
     <script type="text/javascript">
+        function home_readmore(btn) {
+            if (!btn) return;
+            var post = btn.closest('.home-post');
+            var body = post ? post.querySelector('.hp-body') : null;
+            if (!post || !body) return;
+            if (body.dataset.hpBusy) return;
+
+            var label = btn.querySelector('.hp-rm-label');
+            var collapsed = parseFloat(body.dataset.hpCollapsed);
+            if (!collapsed) {
+                var match = /([\d.]+)px/.exec(getComputedStyle(body).maxHeight);
+                collapsed = match ? parseFloat(match[1]) : 112;
+                body.dataset.hpCollapsed = collapsed;
+            }
+
+            var done = false;
+            var finish = function () {
+                if (done) return;
+                done = true;
+                body.removeEventListener('transitionend', finish);
+                delete body.dataset.hpBusy;
+            };
+
+            if (post.classList.contains('expanded')) {
+                body.style.maxHeight = collapsed + 'px';
+                post.classList.remove('expanded');
+                btn.setAttribute('aria-expanded', 'false');
+                if (label) label.textContent = btn.dataset.label;
+                body.addEventListener('transitionend', finish);
+                window.setTimeout(finish, 800);
+            } else {
+                body.style.maxHeight = 'none';
+                var full = body.scrollHeight;
+                body.style.maxHeight = collapsed + 'px';
+                void body.offsetHeight;
+                body.style.maxHeight = full + 'px';
+                post.classList.add('expanded');
+                btn.setAttribute('aria-expanded', 'true');
+                if (label) label.textContent = btn.dataset.labelAlt;
+                body.addEventListener('transitionend', finish);
+                window.setTimeout(finish, 800);
+            }
+        }
+
+        function home_switch_tab(btn) {
+            if (!btn) return;
+            var widget = btn.closest('.htl-widget-users');
+            if (!widget) return;
+            var tab = btn.dataset.tab;
+            var tabs = btn.parentNode;
+            if (tabs) {
+                for (var i = 0; i < tabs.children.length; i++) {
+                    tabs.children[i].classList.toggle('htl-tab-active', tabs.children[i] === btn);
+                }
+            }
+            var panels = widget.querySelectorAll('.htl-panel');
+            for (var j = 0; j < panels.length; j++) {
+                panels[j].classList.toggle('htl-panel-active', panels[j].dataset.panel === tab);
+            }
+            var icon = document.getElementById('htl-head-icon');
+            if (icon && btn.dataset.icon) icon.className = 'fa ' + btn.dataset.icon;
+            var label = document.getElementById('htl-head-label');
+            if (label && btn.dataset.label) label.textContent = btn.dataset.label;
+        }
+
         $(document).ready(function () {
             $('.time-remaining').each(function () {
                 count_down($(this));
             });
+
+            try {
+                $('.home-post').each(function () {
+                    var body = $(this).find('.hp-body')[0];
+                    var btn = $(this).find('.hp-readmore')[0];
+                    if (!body || !btn) return;
+                    var style = getComputedStyle(body);
+                    var collapsed = parseInt(style.maxHeight, 10) || 112;
+                    if (body.scrollHeight <= collapsed + 8) {
+                        btn.style.display = 'none';
+                        $(this).addClass('fits');
+                    }
+                });
+            } catch (e) {
+            }
 
             $('.blog-sidebar').hide();
             $('#blog-tab').find('a').click(function (e) {
@@ -65,9 +148,14 @@
                     <div class="gcse-searchresults-only"></div>
                 </div>
                 {% endif %}
-                {% for post in posts %}
-                    {% include "blog/blog-post.html" %}
-                {% endfor %}
+                <div class="home-posts">
+                    {% for post in posts %}
+                        {% include "blog/home-post.html" %}
+                    {% endfor %}
+                    {% if not posts %}
+                        <div class="home-empty">{{ _('No posts yet.') }}</div>
+                    {% endif %}
+                </div>
             </div>
             {% if page_obj.has_other_pages() %}
                 <div class="bottom-pagination-bar">{% include "list-pages.html" %}</div>
@@ -75,120 +163,7 @@
         </div>
 
         <div class="blog-sidebar">
-            {% if own_open_tickets %}
-                <div class="blog-sidebox sidebox">
-                    <h3>{{ _('My open tickets') }} <i class="fa fa-question-circle"></i></h3>
-                    <div class="sidebox-content">
-                        <ul class="own-open-tickets">
-                            {% for ticket in own_open_tickets %}
-                                <li>
-                                    <div class="title">
-                                        <a href="{{ url('ticket', ticket.id) }}">{{ ticket.title }}</a>
-                                    </div>
-                                    <div class="object">
-                                        <a href="{{ ticket.linked_item.get_absolute_url() }}">
-                                            {{ ticket.linked_item|item_title|truncatechars_html(30) }}</a>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if open_tickets %}
-                <div class="blog-sidebox sidebox">
-                    <h3>{{ _('New tickets') }} <i class="fa fa-exclamation-circle"></i></h3>
-                    <div class="sidebox-content">
-                        <ul class="open-tickets">
-                            {% for ticket in open_tickets %}
-                                <li>
-                                    <div class="title">
-                                        <a href="{{ url('ticket', ticket.id) }}">{{ ticket.title }}</a>
-                                    </div>
-                                    <div class="object">
-                                        <a href="{{ ticket.linked_item.get_absolute_url() }}">
-                                            {{ ticket.linked_item|item_title|truncatechars_html(30) }}</a>
-                                    </div>
-                                    <div class="author">{{ link_user(ticket.user) }}</div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
-            {% if current_contests %}
-                <div class="blog-sidebox sidebox">
-                    <h3>{{ _('Ongoing contests') }} <i class="fa fa-trophy"></i></h3>
-                    <div class="sidebox-content sidebox-ongoing-contest">
-                        {% for contest in current_contests %}
-                            <div class="contest">
-                                <div class="contest-list-title">
-                                    <a href="{{ url('contest_view', contest.key) }}">{{ contest.name }}</a>
-                                </div>
-                                <div class="time">
-                                    {{ _('Ends in %(countdown)s.', countdown=as_countdown(contest.time_before_end)) }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if future_contests %}
-                <div class="blog-sidebox sidebox">
-                    <h3>{{ _('Upcoming contests') }} <i class="fa fa-trophy"></i></h3>
-                    <div class="sidebox-content">
-                        {% for contest in future_contests %}
-                            <div class="contest">
-                                <div class="contest-list-title">
-                                    <a href="{{ url('contest_view', contest.key) }}">{{ contest.name }}</a>
-                                </div>
-                                <div class="time">
-                                    {{ _('Starting in %(countdown)s.', countdown=as_countdown(contest.time_before_start)) }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-            {% if top_rated_users %}
-                {% include "blog/top-rating.html" %}
-            {% endif %}
-            {% if top_contrib %}
-                {% include "blog/top-contrib.html" %}
-            {% endif %}
-            <div class="blog-sidebox sidebox">
-                <h3 style="display: flex; justify-content: space-between; white-space: nowrap;">
-                    <span style="margin-right: 10px;">
-                        {{ _('Comment stream') }}
-                    </span>
-                    {% if misc_config.discord_invite_link and misc_config.discord_invite_shieldio %}
-                        <span style="margin: 0.1em 0.3em -6px;">
-                            <a href="{{ misc_config.discord_invite_link }}">
-                                <img style="max-width: none;" src="{{ misc_config.discord_invite_shieldio }}" alt="Discord">
-                            </a>
-                        </span>
-                    {% endif %}
-                </h3>
-                <div class="sidebox-content">
-                    <ul>
-                        {% for comment in comments %}
-                            <li>
-                                <span style="padding-left:0.25em" class="poster">
-                                    {{ link_user(comment.author) }}
-                                </span> &rarr;
-                                <a href="{{ comment.link }}#comment-{{ comment.id }}">{{ comment.page_title }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <span class="rssatom">
-                        <a href="{{ url('comment_rss') }}"><span><i class="fa fa-rss"></i></span> RSS</a>
-                        /
-                        <a href="{{ url('comment_atom') }}">Atom</a>
-                    </span>
-                </div>
-            </div>
+            {% include "blog/home-widgets.html" %}
         </div>
     </div>
     {% block after_posts %}{% endblock %}

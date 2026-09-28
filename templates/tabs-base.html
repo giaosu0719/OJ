@@ -6,12 +6,25 @@
     </li>
 {% endmacro %}
 
-<div class="tabs">
-    {% if not left_align_tabs %}
-        <h2>{{ content_title or title }}</h2>
-    {% endif %}
-    {% block post_tab_spacer %}{% endblock %}
-    <ul>
-        {% block tabs %}{% endblock %}
-    </ul>
+{% macro make_tab_icon(name, fa, url, text) %}
+    <li class="tab tab-icon-only{% if tab == name %} active{% endif %}">
+        {%- if url %}<a href="{{ url }}" title="{{ text }}" aria-label="{{ text }}">{% else %}<span title="{{ text }}" aria-label="{{ text }}">{% endif -%}
+        <i class="tab-icon fa {{ fa }}"></i>
+        {%- if url %}</a>{% else %}</span>{% endif -%}
+    </li>
+{% endmacro %}
+
+<div class="tabs-rowwrapper{% block tabs_wrapper_class %}{% endblock %}">
+    <div class="tabs {% block tabs_class %}{% endblock %}">
+        {% if not left_align_tabs %}
+            <h2>{{ content_title or title }}</h2>
+        {% endif %}
+        {% block post_tab_spacer %}{% endblock %}
+        <ul>
+            {% block tabs %}{% endblock %}
+        </ul>
+    </div>
+    <div class="tabs-admin-block">
+        {% block tabs_admin %}{% endblock %}
+    </div>
 </div>

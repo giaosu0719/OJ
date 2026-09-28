@@ -156,7 +156,8 @@ def link_user(user):
     if isinstance(profile, Profile) and profile.display_badge:
         display_badge_img = f'<img src="{escape(profile.display_badge.mini)}"' \
                             f' title="{escape(profile.display_badge.name)}"' \
-                            f' style="height: 1em; width: auto; margin-left: 0.25em;" />'
+                            f' draggable="false"' \
+                            f' style="height: 1em; width: auto; margin-left: 0.25em; user-select: none;" />'
     else:
         display_badge_img = ''
 

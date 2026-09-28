@@ -11,14 +11,12 @@
     </script>
 {% endblock %}
 
-{% block title_row %}
-    {% set tab = 'comments' %}
-    {% include "user/user-tabs.html" %}
-{% endblock %}
+{% block title_row %}{% endblock %}
 
 {% block title_ruler %}{% endblock %}
 
 {% block body %}
+    <div class="user-nav-row">{% with tab='comments', left_align_tabs=True %}{% include "user/user-tabs.html" %}{% endwith %}</div>
     {% block before_comments %}{% endblock %}
         {% if request.user.has_perm('judge.change_comment') %}
         <form action="{{url('user_comment', user.username)}}" method="post">

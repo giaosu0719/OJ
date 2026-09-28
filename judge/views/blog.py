@@ -18,15 +18,15 @@ from reversion import revisions
 from judge.comments import CommentedDetailView
 from judge.dblock import LockModel
 from judge.forms import BlogPostForm
-from judge.models import (BlogPost, BlogPostTag, BlogVote, Comment, Contest, Language,
-                          Problem, Profile, Submission, Ticket)
+from judge.models import (BlogPost, BlogPostTag, BlogVote, Comment, Language,
+                          Problem, Profile, Submission)
 from judge.tasks.webhook import on_new_blogpost
 from judge.utils.cachedict import CacheDict
 from judge.utils.diggpaginator import DiggPaginator
 from judge.utils.opengraph import generate_opengraph
-from judge.utils.tickets import filter_visible_tickets
 from judge.utils.unicode import remove_accents
 from judge.utils.views import TitleMixin, generic_message
+from judge.views.home import build_home_widgets_context
 
 
 @login_required
@@ -222,16 +222,15 @@ class PostList(PostListBase):
 
     def get_context_data(self, **kwargs):
         context = super(PostList, self).get_context_data(**kwargs)
-        context['first_page_href'] = reverse('home')
+        context['first_page_href'] = reverse('blog_post_list')
 
-        context['newsfeed_link'] = f"{reverse('home')}?show_all_blogs=false"
-        context['all_blogs_link'] = f"{reverse('home')}?show_all_blogs=true"
+        context['newsfeed_link'] = f"{reverse('blog_post_list')}?show_all_blogs=false"
+        context['all_blogs_link'] = f"{reverse('blog_post_list')}?show_all_blogs=true"
 
         context['show_all_blogs'] = self.show_all_blogs
         context['gcse_url'] = settings.GOOGLE_SEARCH_ENGINE_URL
 
         context['page_prefix'] = reverse('blog_post_list')
-        context['comments'] = Comment.most_recent(self.request.user, 10)
         context['new_problems'] = Problem.get_public_problems() \
                                          .order_by('-date', 'code')[:settings.DMOJ_BLOG_NEW_PROBLEM_COUNT]
         context['page_titles'] = CacheDict(lambda page: Comment.get_page_title(page))
@@ -241,52 +240,13 @@ class PostList(PostListBase):
         context['submission_count'] = lambda: Submission.objects.aggregate(max_id=Max('id'))['max_id'] or 0
         context['language_count'] = Language.objects.count
 
-        now = timezone.now()
-
-        visible_contests = Contest.get_visible_contests(self.request.user).filter(is_visible=True) \
-                                  .order_by('start_time')
-
-        context['current_contests'] = visible_contests.filter(start_time__lte=now, end_time__gt=now)
-        context['future_contests'] = visible_contests.filter(start_time__gt=now)
-
-        context['top_rated_users'] = self.get_top_rated_users()
-        context['top_contrib'] = self.get_top_contributors()
-
-        if self.request.user.is_authenticated:
-            context['own_open_tickets'] = (
-                Ticket.objects.filter(user=self.request.profile, is_open=True).order_by('-id')
-                              .prefetch_related('linked_item').select_related('user__user', 'user__display_badge')
-            )
-        else:
-            context['own_open_tickets'] = []
-
-        # Superusers better be staffs, not the spell-casting kind either.
-        if self.request.user.is_staff:
-            tickets = (Ticket.objects.order_by('-id').filter(is_open=True).prefetch_related('linked_item')
-                             .select_related('user__user', 'user__display_badge'))
-            context['open_tickets'] = filter_visible_tickets(tickets, self.request.user)[:10]
-        else:
-            context['open_tickets'] = []
+        profile = self.request.profile if self.request.user.is_authenticated else None
+        context.update(build_home_widgets_context(self.request.user, profile))
 
         context['tab'] = self.tab
         context['left_align_tabs'] = True
 
         return context
-
-    def get_top_rated_users(self):
-        return (Profile.objects.filter(rating__isnull=False, is_unlisted=False)
-                .order_by('-rating')
-                .only('user', 'rating', 'display_rank', 'display_badge', 'username_display_override')
-                .select_related('user', 'display_badge')
-                [:settings.VNOJ_HOMEPAGE_TOP_USERS_COUNT])
-
-    def get_top_contributors(self):
-        return (Profile.objects.order_by('-contribution_points')
-                .filter(contribution_points__gt=0, is_unlisted=False)
-                .only('user', 'contribution_points', 'display_rank', 'display_badge', 'rating',
-                      'username_display_override')
-                .select_related('user', 'display_badge')
-                [:settings.VNOJ_HOMEPAGE_TOP_USERS_COUNT])
 
 
 class PostView(TitleMixin, CommentedDetailView):

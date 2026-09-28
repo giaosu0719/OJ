@@ -16,6 +16,9 @@ from . import (camo, datetime, filesize, format, gravatar, language, markdown, r
                spaceless, submission, timedelta)
 from . import registry
 
+# Ensure rating module is initialized for registry
+assert rating
+
 registry.function('str', str)
 registry.filter('str', str)
 registry.filter('json', json.dumps)

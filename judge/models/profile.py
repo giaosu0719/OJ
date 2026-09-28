@@ -439,6 +439,8 @@ class Profile(models.Model):
                                   help_text=_('The amount of Connhen (Spiders) owned by the user.'))
     display_connhen_balance = models.BooleanField(default=True, verbose_name=_('Display Connhen balance'),
                                                   help_text=_('Display Connhen balance on on navigation bar.'))
+    # External handles (Codeforces / Discord / AtCoder) live in the feature-data
+    # database; see judge/feature_data/api.py.)
 
     @classmethod
     def get_ticket_secret(cls, profile_id):

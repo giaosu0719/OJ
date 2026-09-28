@@ -57,11 +57,12 @@
 {% endblock %}
 
 {% block body %}
-    <div id="common-content">
-        <div id="content-right">
+    <div id="common-content" class="{% block common_content_class %}{% endblock %}">
+        <div id="content-right" class="{% block content_right_class %}{% endblock %}">
             <div class="info-float">{% block info_float %}{% endblock %}</div>
         </div>
         <div id="content-left" class="split-common-content">
+            {% block description_header %}{% endblock %}
             <div class="content-description screen">
                 {% block description %}{% endblock %}
                 {% block description_end %}

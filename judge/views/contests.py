@@ -8,6 +8,7 @@ from operator import attrgetter, itemgetter
 
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.context_processors import PermWrapper
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.cache import cache
@@ -38,8 +39,10 @@ from reversion import revisions
 
 from judge.comments import CommentedDetailView
 from judge.contest_format import ICPCContestFormat
+from judge.feature_data.api import get_disqualify_reasons, set_disqualify_reason
 from judge.forms import ContestAnnouncementForm, ContestCloneForm, ContestDownloadDataForm, ContestForm, \
     ProposeContestProblemFormSet
+from judge.jinja2.gravatar import gravatar
 from judge.models import Contest, ContestAnnouncement, ContestMoss, ContestParticipation, ContestProblem, \
     ContestSubmission, ContestTag, Language, Organization, Problem, ProblemClarification, Profile, Solution, Submission
 from judge.ratings import RATING_CLASS, RATING_LEVELS, RATING_VALUES
@@ -845,11 +848,14 @@ def _serialize_user(row, user_url_tpl, org_url_tpl):
     badge_mini = row['_badge_mini']
     badge_name = row['_badge_name']
     active_banner_class_name = row['_active_banner_class_name'] or ''
+    email = row['_email'] or ''
+    gravatar_url = gravatar(email, 40)
 
     return {
         'username': username,
         'display_name': display_name,
         'name': row['user__user__first_name'],
+        'gravatar_url': gravatar_url,
         'css_class': (' '.join([
             Profile.get_user_css_class(row['user__display_rank'], row['user__rating']),
             f'banner-{active_banner_class_name}' if active_banner_class_name else '',
@@ -893,6 +899,7 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         _badge_mini=F('user__display_badge__mini'),
         _badge_name=F('user__display_badge__name'),
         _active_banner_class_name=F('user__active_banner__class_name'),
+        _email=F('user__user__email'),
     ).values(
         'id', 'score', 'frozen_score', 'cumtime', 'frozen_cumtime',
         'tiebreaker', 'frozen_tiebreaker', 'is_disqualified', 'virtual',
@@ -901,17 +908,26 @@ def make_contest_ranking_json(contest, problems, queryset, frozen=False):
         'user__username_display_override',
         'user__user__username', 'user__user__first_name',
         'rating__rating',
-        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name',
+        '_org_short_name', '_org_slug', '_badge_mini', '_badge_name', '_active_banner_class_name', '_email',
     )
 
+    reason_labels = ContestParticipation.DISQUALIFY_REASON_LABELS
+    rows = list(queryset)
+    # One read for the whole scoreboard: the reason lives in a separate
+    # database, so it cannot come out of the values() call above.
+    reasons = get_disqualify_reasons(row['id'] for row in rows)
     participations_data = []
-    for row in queryset:
+    for row in rows:
+        reason, detail = reasons.get(row['id'], ('', ''))
         participations_data.append({
             'id': row['id'],
             'score': float(row['frozen_score'] if frozen else row['score']),
             'cumtime': float(row['frozen_cumtime'] if frozen else row['cumtime']),
             'tiebreaker': float(row['frozen_tiebreaker'] if frozen else row['tiebreaker']),
             'is_disqualified': row['is_disqualified'],
+            'disqualify_reason': reason,
+            'disqualify_reason_detail': detail,
+            'disqualify_reason_label': reason_labels.get(reason or '', ''),
             'virtual': row['virtual'],
             'rating': row['rating__rating'],
             'user': _serialize_user(row, _user_url_tpl, _org_url_tpl),
@@ -984,6 +1000,14 @@ class ContestRankingBase(ContestMixin, LoginRequiredMixin, TitleMixin, DetailVie
                     'judge.change_contestparticipation',
                 ),
                 'disqualify_url': reverse('contest_participation_disqualify', args=[contest.key]),
+                # DISQUALIFY_REASON_LABELS, not DISQUALIFY_REASON_CHOICES: the
+                # choice labels are lazy translation proxies and json.dumps
+                # cannot serialise them.
+                'disqualify_reasons': [
+                    {'value': code, 'label': label}
+                    for code, label in ContestParticipation.DISQUALIFY_REASON_LABELS.items()
+                ],
+                'disqualify_other_code': ContestParticipation.DISQUALIFY_REASON_OTHER,
             } if self.can_edit else {}),
             'points_precision': contest.points_precision,
             'run_pretests_only': contest.run_pretests_only,
@@ -1062,7 +1086,7 @@ class ContestRanking(ContestRankingBase):
     @property
     def json_cache_key(self):
         return f'contest_ranking_json_{self.object.key}_{self.show_virtual}_{self.is_frozen}_' \
-               f'{self.request.LANGUAGE_CODE}'
+               f'{self.request.LANGUAGE_CODE}_avatar_v1'
 
     def _build_ranking_json_data(self):
         contest = self.object
@@ -1105,6 +1129,7 @@ class ContestRanking(ContestRankingBase):
         profile = self.request.profile
         _user_url_tpl = reverse('user_page', args=['__USERNAME__'])
         username = profile.user.username
+        own_reason, own_detail = get_disqualify_reasons([virtual_part.id]).get(virtual_part.id, ('', ''))
         return {
             'contest': contest_data,
             'problems': problems_data,
@@ -1112,6 +1137,10 @@ class ContestRanking(ContestRankingBase):
                 'id': virtual_part.id,
                 'real_start': int(virtual_part.real_start.timestamp()),
                 'is_disqualified': virtual_part.is_disqualified,
+                'disqualify_reason': own_reason,
+                'disqualify_reason_detail': own_detail,
+                'disqualify_reason_label': ContestParticipation.DISQUALIFY_REASON_LABELS.get(
+                    own_reason or '', ''),
                 'virtual': virtual_part.virtual,
                 'rating': profile.rating,
                 'user': {
@@ -1268,7 +1297,33 @@ class ContestParticipationDisqualify(ContestMixin, SingleObjectMixin, View):
         except ObjectDoesNotExist:
             pass
         else:
-            participation.set_disqualified(not participation.is_disqualified)
+            # Old behaviour: a bare POST with no explicit action just toggles the flag.
+            # Kept as a fallback so the pre-reason-picker UI keeps working.
+            # participation.set_disqualified(not participation.is_disqualified)
+            action = request.POST.get('disqualify_action') or ''
+
+            if action == 'undisqualify':
+                # set_disqualified(False) also wipes the stored reason.
+                participation.set_disqualified(False)
+            elif action == 'disqualify':
+                reason = request.POST.get('disqualify_reason') or ''
+                detail = (request.POST.get('disqualify_reason_detail') or '').strip()
+
+                if reason not in ContestParticipation.DISQUALIFY_REASON_CODES:
+                    messages.error(request, _('Please pick a disqualification reason.'))
+                elif reason == ContestParticipation.DISQUALIFY_REASON_OTHER and not detail:
+                    messages.error(request, _('Please spell out the reason for the "Khác" option.'))
+                else:
+                    # Feature data first: it is the only write that cannot be retried
+                    # safely, and a reason without a flag is harmless.
+                    set_disqualify_reason(
+                        participation, reason,
+                        # Only "Khác" carries free text; presets store a clean code.
+                        detail if reason == ContestParticipation.DISQUALIFY_REASON_OTHER else '',
+                    )
+                    participation.set_disqualified(True)
+            else:
+                participation.set_disqualified(not participation.is_disqualified)
         return HttpResponseRedirect(reverse('contest_ranking', args=(self.object.key,)))
 
 

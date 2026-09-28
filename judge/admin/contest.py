@@ -406,6 +406,7 @@ class ContestParticipationAdmin(admin.ModelAdmin):
         return super(ContestParticipationAdmin, self).get_queryset(request).only(
             'contest__name', 'contest__format_name', 'contest__format_config',
             'user__user__username', 'real_start', 'score', 'cumtime', 'tiebreaker', 'virtual',
+            'is_disqualified',
         )
 
     def save_model(self, request, obj, form, change):

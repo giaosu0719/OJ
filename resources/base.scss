@@ -164,10 +164,20 @@ hr {
     height: 100%;
     min-height: 25em;
     display: block;
+    box-sizing: border-box;
+    padding-left: 60px;
+    padding-right: 60px;
 
     .title {
         color: $color_primary75;
     }
+}
+
+#content:has(.home-layout),
+#content:has(.user-info-page),
+#content:has(#content-left.users) {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 footer {
@@ -280,9 +290,6 @@ noscript #noscript {
     border-right: 1px solid $color_primary25;
     border-left: 1px solid $color_primary25;
     background: $color_pageBg;
-    
-    // hihihiihihihihihh
-    // max-width: 100em;
 }
 
 // border-bottom: 1px solid rgb(204, 204, 204)
@@ -322,6 +329,12 @@ math {
 @media (max-width: 760px) {
     #content {
         width: auto;
+        padding: 0 16px;
+    }
+
+    #content:has(.home-layout),
+    #content:has(.user-info-page),
+    #content:has(#content-left.users) {
         padding: 0 5px;
     }
 }

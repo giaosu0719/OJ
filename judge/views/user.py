@@ -33,6 +33,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from reversion import revisions
 
+from judge.feature_data.api import get_social_handle, save_social_handle
 from judge.forms import CustomAuthenticationForm, ProfileForm, UserBanForm, UserDownloadDataForm, UserForm, \
     newsletter_id
 from judge.models import BlogPost, Organization, Profile, Submission
@@ -677,6 +678,15 @@ def edit_profile(request):
                 revisions.set_user(request.user)
                 revisions.set_comment(_('Updated on site'))
 
+            # Handles live in the feature-data file, so they are written after the
+            # revision closes -- the two databases cannot share a transaction.
+            save_social_handle(
+                request.profile,
+                codeforces=form.cleaned_data['codeforces_handle'],
+                discord=form.cleaned_data['discord_handle'],
+                atcoder=form.cleaned_data['atcoder_handle'],
+            )
+
             if newsletter_id is not None:
                 try:
                     subscription = Subscription.objects.get(user=request.user, newsletter_id=newsletter_id)
@@ -695,7 +705,13 @@ def edit_profile(request):
 
             return HttpResponseRedirect(request.path)
     else:
-        form = ProfileForm(instance=request.profile, user=request.user)
+        # Initial keys must match the form field names, not the stored ones.
+        handles = get_social_handle(request.profile.id)
+        form = ProfileForm(instance=request.profile, user=request.user, initial={
+            'codeforces_handle': handles['codeforces'],
+            'discord_handle': handles['discord'],
+            'atcoder_handle': handles['atcoder'],
+        })
         form_user = UserForm(instance=request.user)
         if newsletter_id is not None:
             try:
@@ -728,9 +744,8 @@ def generate_api_token(request):
 
 @require_POST
 def set_theme(request):
-    theme = request.POST.get('theme', 'light')
-    if theme not in ('light', 'dark', 'auto'):
-        theme = 'light'
+    # Dark mode is disabled site-wide; only the light theme can be selected.
+    theme = 'light'
     response = HttpResponseRedirect(request.POST.get('next', '/'))
     if request.user.is_authenticated:
         request.profile.site_theme = theme
@@ -789,6 +804,7 @@ class UserList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMixin
             key=attrgetter('performance_points', 'problem_count'),
             rank=self.paginate_by * (context['page_obj'].number - 1),
         )
+        context['left_align_tabs'] = True
         context['first_page_href'] = '.'
         context.update(self.get_sort_context())
         context.update(self.get_sort_paginate_context())
@@ -825,6 +841,7 @@ class ContribList(QueryStringSortMixin, InfinitePaginationMixin, DiggPaginatorMi
             key=attrgetter('contribution_points'),
             rank=self.paginate_by * (context['page_obj'].number - 1),
         )
+        context['left_align_tabs'] = True
         context['first_page_href'] = '.'
         context.update(self.get_sort_context())
         context.update(self.get_sort_paginate_context())

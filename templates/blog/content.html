@@ -3,6 +3,9 @@
 {% set logged_in = request.user.is_authenticated %}
 {% set profile = request.profile if logged_in else None %}
 
+{% block title_row %}{% endblock %}
+{% block title_ruler %}{% endblock %}
+
 {% block js_media %}
     {% include "blog/media-js.html" %}
     {% if comment_form and comment_form.errors %}
@@ -14,82 +17,84 @@
 {% endblock %}
 
 {% block media %}
+    {% compress css %}
+        {{ select_css_theme('home.css', 'dark/home.css') }}
+    {% endcompress %}
     {% include "comments/media-css.html" %}
 {% endblock %}
 
-{% block title_row %}
-<div id="post-{{ post.id }}" style="display: flex; gap: 0.5em;">
-    <div class="vote">
-        {% if logged_in %}
-            <a href="javascript:blog_upvote({{ post.id }})"
-            class="upvote-link fa fa-chevron-up fa-fw{% if post.vote_score == 1 %} voted{% endif %}"></a>
-        {% else %}
-            <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})" title="{{ _('Please log in to vote') }}"
-            class="upvote-link fa fa-chevron-up fa-fw"></a>
-        {% endif %}
-        <br>
-        <div id="post-score" class="comment-score">{{ post.score }}</div>
-        {% if logged_in %}
-            <a href="javascript:blog_downvote({{ post.id }})"
-            class="downvote-link fa fa-chevron-down fa-fw{% if post.vote_score == -1 %} voted{% endif %}"></a>
-        {% else %}
-            <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})" title="{{ _('Please log in to vote') }}"
-            class="downvote-link fa fa-chevron-down fa-fw"></a>
-        {% endif %}
-    </div>
-    <div style="width: 100%;">
-        <h2 style="display:inline">
-            {% block content_title %}
-                {% if content_title %}{{ content_title }}{% else %}{{ title }}{% endif %}
-            {% endblock %}
-        </h2>
-        {% if post.organization %}
-            <span class="organization-tag" style="display: inline;">
-                <a href="{{ post.organization.get_absolute_url() }}">
-                    <i class="fa fa-lock"></i> {{ post.organization.name }}
-                </a>
-            </span>
-        {% endif %}
-        {% if post.is_editable_by(request.user) %}
-            <div class="title-line-action">[<a href="{{ url('blog_post_edit', post.id, post.slug) }}">{{ _('Edit') }}</a>]</div>
-        {% endif %}
-        <div class="time">
-            {% with authors=post.authors.all() %}
-                {%- if authors -%}
-                    <span class="post-authors">{{ link_users(authors) }}</span>
-                {%- endif -%}
-            {% endwith %}
-            <span class="post-time">
-                {% trans trimmed time=post.publish_on|date(_("N j, Y, g:i a")) %}
-                    posted on {{ time }}
-                {% endtrans %}
-            </span>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
 {% block body %}
-    <div class="post-full">
-        <div class="body content-description">
-            {% cache 86400 'post_content' post.id MATH_ENGINE %}
-                {{ post.content|markdown('blog', MATH_ENGINE)|reference|str|safe}}
-            {% endcache %}
-        </div>
-    </div>
-    <hr>
-    <span class="social">
-        {{ post_to_facebook(request, post, '<i class="fa fa-facebook-official"></i>') }}
-        {{ post_to_twitter(request, SITE_NAME + ':', post, '<i class="fa fa-twitter"></i>') }}
-    </span>
-    <div id="comments" data-comments-url="{{ url('blog_post_comments', post.id, post.slug) }}"
-         data-comments-trigger="auto"
-         data-comments-preloaded="{{ 'true' if comment_form and comment_form.errors else 'false' }}">
-        {% if comment_form and comment_form.errors %}
-            {% include "comments/list.html" %}
-        {% else %}
-            <div class="comments-loading">{{ _('Loading...') }}</div>
-        {% endif %}
+    <div class="blog-post-page">
+        <article class="blog-post-card" id="post-{{ post.id }}">
+            <div class="bpc-header">
+                <div class="bpc-title-area">
+                    <h1 class="bpc-title">
+                        {% if not post.visible %}<i class="fa fa-lock" style="color: red"></i> {% endif %}{{ post.title }}
+                    </h1>
+                    {% if post.organization %}
+                        <span class="organization-tag" style="display: inline;">
+                            <a href="{{ post.organization.get_absolute_url() }}">
+                                <i class="fa fa-lock"></i> {{ post.organization.name }}
+                            </a>
+                        </span>
+                    {% endif %}
+                    {% if post.is_editable_by(request.user) %}
+                        <div class="title-line-action">[<a href="{{ url('blog_post_edit', post.id, post.slug) }}">{{ _('Edit') }}</a>]</div>
+                    {% endif %}
+                    <div class="bpc-meta">
+                        {% with authors=post.authors.all() %}
+                            {% if authors %}<span class="bpc-authors">{{ link_users(authors) }}</span>{% endif %}
+                        {% endwith %}
+                        {% if post.sticky %}<i title="Sticky" class="fa fa-star"></i>{% endif %}
+                        <span class="bpc-time">
+                            {% trans trimmed time=post.publish_on|date(_("N j, Y, g:i a")) %}
+                                posted on {{ time }}
+                            {% endtrans %}
+                        </span>
+                    </div>
+                </div>
+                <div class="bpc-votes hp-votes">
+                    {% if logged_in %}
+                        <a href="javascript:blog_upvote({{ post.id }});"
+                           class="vote-btn upvote-link fa fa-thumbs-up{% if post.vote_score == 1 %} voted{% endif %}"
+                           title="{{ _('Upvote') }}"></a>
+                        <span class="vote-count" id="post-score">{{ post.score }}</span>
+                        <a href="javascript:blog_downvote({{ post.id }});"
+                           class="vote-btn downvote-link fa fa-thumbs-down{% if post.vote_score == -1 %} voted{% endif %}"
+                           title="{{ _('Downvote') }}"></a>
+                    {% else %}
+                        <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})"
+                           class="vote-btn upvote-link fa fa-thumbs-up"
+                           title="{{ _('Please log in to vote') }}"></a>
+                        <span class="vote-count" id="post-score">{{ post.score }}</span>
+                        <a href="javascript:alert({{ _('Please log in to vote')|htmltojs }})"
+                           class="vote-btn downvote-link fa fa-thumbs-down"
+                           title="{{ _('Please log in to vote') }}"></a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bpc-body content-description">
+                {% cache 86400 'post_content' post.id MATH_ENGINE %}
+                    {{ post.content|markdown('blog', MATH_ENGINE)|reference|str|safe }}
+                {% endcache %}
+            </div>
+            <div class="social">
+                {{ post_to_facebook(request, post, '<i class="fa fa-facebook-official"></i>') }}
+                {{ post_to_twitter(request, SITE_NAME + ':', post, '<i class="fa fa-twitter"></i>') }}
+            </div>
+        </article>
+
+        <section class="blog-comments-card">
+            <div id="comments" data-comments-url="{{ url('blog_post_comments', post.id, post.slug) }}"
+                 data-comments-trigger="auto"
+                 data-comments-preloaded="{{ 'true' if comment_form and comment_form.errors else 'false' }}">
+                {% if comment_form and comment_form.errors %}
+                    {% include "comments/list.html" %}
+                {% else %}
+                    <div class="comments-loading">{{ _('Loading...') }}</div>
+                {% endif %}
+            </div>
+        </section>
     </div>
     <div style="clear: both;"></div>
 {% endblock %}

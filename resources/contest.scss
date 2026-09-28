@@ -1,5 +1,11 @@
 @use "vars" as *;
 
+.contest-detail {
+    max-width: 1420px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #contest-calendar {
     border-collapse: collapse;
     width: 100%;
@@ -210,6 +216,10 @@ form.contest-join-pseudotab {
 
     td {
         height: 2.5em;
+    }
+
+    td.badge-col {
+        height: 56px;
     }
 
     td:not(.user-name, .personal-info) a:hover {

@@ -48,3 +48,7 @@ resources/blog-post.css
 resources/theme-toggle.css
 .DS_Store
 .review/
+
+# Feature-data store (live data + lock file, see docs/FEATURE_DATA.md)
+feature_data.json
+feature_data.json.lock

@@ -261,13 +261,10 @@
 
 {% block title_ruler %}{% endblock %}
 
-{% block title_row %}
-    {% set tab = 'edit' %}
-    {% set user = request.profile %}
-    {% include "user/user-tabs.html" %}
-{% endblock %}
+{% block title_row %}{% endblock %}
 
 {% block body %}
+    <div class="user-nav-row">{% with tab='edit', left_align_tabs=True %}{% set user = request.profile %}{% include "user/user-tabs.html" %}{% endwith %}</div>
     <div class="centered-form">
         <form id="edit-form" action="" method="post" class="form-area">
             {% if form.errors or form_user.errors %}
@@ -332,6 +329,22 @@
                                 <td><span class="fullwidth">{{ form.math_engine }}</span></td>
                             </tr>
                         {% endif %}
+                    </table>
+                </div>
+                <div class="pane" style="padding-top:0.7em">
+                    <table border="0">
+                        <tr>
+                            <td><label class="inline-header grayed">{{ _('Codeforces handle:') }}</label></td>
+                            <td><span class="fullwidth">{{ form.codeforces_handle }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><label class="inline-header grayed">{{ _('Discord handle:') }}</label></td>
+                            <td><span class="fullwidth">{{ form.discord_handle }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><label class="inline-header grayed">{{ _('AtCoder handle:') }}</label></td>
+                            <td><span class="fullwidth">{{ form.atcoder_handle }}</span></td>
+                        </tr>
                     </table>
                 </div>
                 {% if form.organizations %}

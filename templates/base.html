@@ -78,8 +78,20 @@
      {% if TOMCHIENXU_CUSTOM_THEME == "WINTER" %}
         <style>
             #page-container {
+                position: relative;
+                isolation: isolate;
+            }
+            #page-container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
                 background-image: url("{{ static('tomchienxu-themes/winter/winter-tomchienxu.png') }}");
                 background-size: 100%;
+                opacity: 0.87;
+                z-index: -1;
             }
         </style>
         <script src="{{ static('tomchienxu-themes/winter/snowstorm.js') }}"></script>
@@ -239,6 +251,10 @@
             }
         }
         function set_theme(theme) {
+            if (theme === 'dark') {
+                alert('Darkmode hiện tại tạm dừng hoạt động');
+                return;
+            }
             $("input[name=theme]").val(theme);
             $("#set_theme").submit();
         }

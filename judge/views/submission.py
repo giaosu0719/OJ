@@ -346,7 +346,7 @@ def filter_submissions_by_visible_problems(queryset, user):
 
 class SubmissionsListBase(LoginRequiredMixin, DiggPaginatorMixin, TitleMixin, ListView):
     model = Submission
-    paginate_by = 50
+    paginate_by = 20
     show_problem = True
     title = gettext_lazy('All submissions')
     content_title = gettext_lazy('All submissions')
