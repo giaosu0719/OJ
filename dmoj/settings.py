@@ -894,8 +894,8 @@ TOMCHIENXU_ENABLE_COSMETICS = False
 TOMCHIENXU_CUSTOM_THEME = ''
 
 # CKTOJ (NEW UI)
-CKTOJ_SHOW_BADGE_COLUMN = False # Show the badge column in user tables (/users, /contrib, organization member lists).
-CKTOJ_SHOW_HOME_HERO = False # Show the <section class="home-hero"> block on the home page.
+CKTOJ_SHOW_BADGE_COLUMN = False  # Show the badge column in user tables (/users, /contrib, organization member lists).
+CKTOJ_SHOW_HOME_HERO = False  # Show the <section class="home-hero"> block on the home page.
 
 try:
     with open(os.path.join(os.path.dirname(__file__), 'local_settings.py')) as f:
