@@ -151,11 +151,12 @@
         </div>
     {% endif %}
 
-    <div class="home-layout">
+    <div class="home-layout{% if not CKTOJ_SHOW_HOME_HERO %} home-layout--no-hero{% endif %}">
         {# ──────── MAIN COLUMN ──────── #}
         <div class="home-main">
 
             {# ── Hero ── #}
+            {% if CKTOJ_SHOW_HOME_HERO %}
             <section class="home-hero">
                 <div class="hero-inner">
                     <h1 class="hero-title">CKTOJ</h1>
@@ -191,6 +192,7 @@
                     </div>
                 </div>
             </section>
+            {% endif %}
 
             {# ── Newsfeed (latest blog posts) ── #}
             <section class="home-section">

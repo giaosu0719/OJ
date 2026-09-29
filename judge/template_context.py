@@ -68,6 +68,8 @@ def general_info(request):
         'HAS_WEBAUTHN': bool(settings.WEBAUTHN_RP_ID),
         'TOMCHIENXU_GLOBALLY_DISPLAY_CONNHEN_BALANCE': settings.TOMCHIENXU_GLOBALLY_DISPLAY_CONNHEN_BALANCE,
         'TOMCHIENXU_ENABLE_COSMETICS': settings.TOMCHIENXU_ENABLE_COSMETICS,
+        'CKTOJ_SHOW_BADGE_COLUMN': settings.CKTOJ_SHOW_BADGE_COLUMN,
+        'CKTOJ_SHOW_HOME_HERO': settings.CKTOJ_SHOW_HOME_HERO,
     }
     if hasattr(request.user, 'profile'):
         info['NOTIFICATION_SECRET'] = request.profile.notification_secret
