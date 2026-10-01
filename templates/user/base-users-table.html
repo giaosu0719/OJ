@@ -4,7 +4,7 @@
         <tr>
             <th class="header rank">{{ rank_header or _("Rank") }}</th>
             {% block after_rank_head %}{% endblock %}
-            <th class="header badge-col">{{ _('Badge') }}</th>
+            {% if CKTOJ_SHOW_BADGE_COLUMN %}<th class="header badge-col">{{ _('Badge') }}</th>{% endif %}
             <th class="header username">{{ _('Username') }}</th>
             {% block before_point_head %}{% endblock %}
             <th class="header points">
@@ -23,12 +23,12 @@
         <tr id="user-{{ user.user.username }}" {% block row_extra scoped %}{% endblock %}>
             <td>{{ rank }}</td>
             {% block after_rank scoped %}{% endblock %}
-            <td class="badge-col">
+            {% if CKTOJ_SHOW_BADGE_COLUMN %}<td class="badge-col">
                 {% if user.display_badge %}
                     <img src="{{ user.display_badge.mini }}" class="user-badge" draggable="false">
                     <span class="user-badge-name">{{ user.display_badge.name }}</span>
                 {% endif %}
-            </td>
+            </td>{% endif %}
             <td class="user-name">
                 <div>
                     <div style="float:left">

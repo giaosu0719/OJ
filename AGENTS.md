@@ -72,12 +72,41 @@ flake8-commas flake8-logging-format flake8-quotes` then `flake8`. Config is
   `storage-namespace`, so the judge always resolves its default namespace. That
   is correct for the single-namespace `traubo.yml` but will misroute the moment
   a second `storage_namespaces:` entry is added to the judge config.
-- **CSS is versioned by hand.** `make_style.sh` writes `resources/style.css` and
-  `resources/dark/style.css` (both gitignored), but the site actually serves
-  whatever `DMOJ_THEME_CSS` in `dmoj/settings.py` names. To ship a style change:
-  build, then `cp resources/style.css resources/style.v42.css` and the same under
-  `resources/dark/`, then bump `DMOJ_THEME_CSS`. `resources/dark/` is gitignored,
-  so only the light copy is committed — the dark one must be created on disk.
+- **CSS is versioned by hand, and `/static` is NOT `resources/`.** Two separate
+  traps, both of which make a correct-looking stylesheet change a no-op:
+  1. `make_style.sh` writes `resources/style.css` and `resources/dark/style.css`
+     (both gitignored), but the site actually serves whatever `DMOJ_THEME_CSS` in
+     `dmoj/settings.py` names. To ship a style change: build, then
+     `cp resources/style.css resources/style.v42.css` and the same under
+     `resources/dark/`, then bump `DMOJ_THEME_CSS`. `resources/dark/` is
+     gitignored, so only the light copy is committed — the dark one must be
+     created on disk.
+  2. nginx serves `location /static` from `root /home/oj` (see
+     `/etc/nginx/conf.d/nginx.conf`), so `/static/x` resolves to
+     `/home/oj/static/x` — a **copy** of `resources/`, not a symlink and not the
+     same directory. `STATICFILES_DIRS` pointing at `resources/` is irrelevant;
+     nothing auto-syncs. After building you must also
+     `cp resources/<file>.css /home/oj/static/` (and `/home/oj/static/dark/`) or
+     the site keeps serving the stale bytes. The copies have been observed
+     drifting by days, and `style.css` can be stale too, not just per-page CSS.
+
+  Always verify over HTTP before claiming a style change shipped:
+  `curl -s http://localhost/static/<file>.css | grep -c '<new-selector>'`.
+  A DOM assertion (element count, `hero: 0`) proves only that the *template*
+  changed and says nothing about the CSS. To check layout actually moved, measure
+  it — see the `CKTOJ_SHOW_HOME_HERO` note below.
+- **Hiding a block from the home grid needs an explicit class, not `:has()`.**
+  `.home-layout` is a CSS grid where `.home-main`/`.home-sidebar` are
+  `display: contents`, so the hero is pinned `grid-row: 1 / 3` to align its bottom
+  with the contests widget. Removing the hero leaves grid rows 1–2 empty and pushes
+  `.home-section` (`grid-row: 3`) down, producing a large dead gap. The fix is a
+  conditional class on `.home-layout` plus a `.home-layout--no-hero` rule that
+  moves `.home-section` to `grid-row: 1 / 3`. Keep the state in the template, which
+  already knows the flag, rather than inferring it with `:has()`.
+  `judge/tests/test_cktoj_toggles.py` asserts the class tracks the setting —
+  extend it if you add another layout toggle. To confirm the gap is actually gone,
+  measure `.home-section`'s `getBoundingClientRect().top` in a headless browser: it
+  should be ~84px (level with the sidebar user card), not ~448px.
 - **Migrations have parallel branches.** `judge/migrations/` contains duplicate
   numbers and many `*_merge_*` files. Run `makemigrations judge` and let Django
   generate the merge rather than hand-numbering. Commits 30658560/50b2cce2 added
