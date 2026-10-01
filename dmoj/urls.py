@@ -196,8 +196,14 @@ urlpatterns = [
 
     path('users/', include([
         path('', user.users, name='user_list'),
+
+        path('import/', user.ImportUsersView.as_view(), name='import_users'),
+        path('import/file/', user.import_users_post_file, name='import_users_post_file'),
+        path('import/submit/', user.import_users_submit, name='import_users_submit'),
+        path('import/sample/', user.sample_import_users, name='import_users_sample'),
+
         path('<int:page>', lambda request, page:
-             HttpResponsePermanentRedirect('%s?page=%s' % (reverse('user_list'), page))),
+            HttpResponsePermanentRedirect('%s?page=%s' % (reverse('user_list'), page))),
         path('find', user.user_ranking_redirect, name='user_ranking_redirect'),
     ])),
 
