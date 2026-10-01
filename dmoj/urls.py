@@ -202,8 +202,12 @@ urlpatterns = [
         path('import/submit/', user.import_users_submit, name='import_users_submit'),
         path('import/sample/', user.sample_import_users, name='import_users_sample'),
 
-        path('<int:page>', lambda request, page:
-            HttpResponsePermanentRedirect('%s?page=%s' % (reverse('user_list'), page))),
+        path(
+            '<int:page>',
+            lambda request, page: HttpResponsePermanentRedirect(
+                '%s?page=%s' % (reverse('user_list'), page)
+            ),
+        ),
         path('find', user.user_ranking_redirect, name='user_ranking_redirect'),
     ])),
 
