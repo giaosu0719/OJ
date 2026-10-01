@@ -205,7 +205,7 @@ urlpatterns = [
         path(
             '<int:page>',
             lambda request, page: HttpResponsePermanentRedirect(
-                '%s?page=%s' % (reverse('user_list'), page)
+                '%s?page=%s' % (reverse('user_list'), page),
             ),
         ),
         path('find', user.user_ranking_redirect, name='user_ranking_redirect'),
